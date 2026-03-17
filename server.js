@@ -29,7 +29,7 @@ const AEM_BEARER = 'Basic Z2VlYmVlOmFkbWlu';                // e.g. "Bearer eyJ.
 //const INTERNAL_API_KEY = process.env.INTERNAL_API_KEY;    // Optional: simple protection
 
 // SendGrid config (required for /generate-and-send)
-const SENDGRID_API_KEY = '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';    // required for send
+const SENDGRID_API_KEY = '';    // required for send
 const SENDGRID_FROM = 'girishbedekar@outlook.com';         // verified sender e.g. "noreply@yourdomain.com"
 if (SENDGRID_API_KEY) {
   sgMail.setApiKey(SENDGRID_API_KEY);
