@@ -1,0 +1,14 @@
+{
+    "name": "ic-document-tutorial",
+    "version": "1.0.0",
+    "main": "server.js",
+    "scripts": {
+        "start": "node server.js"
+    },
+    "dependencies": {
+        "@sendgrid/mail": "^8.1.6",
+        "axios": "^1.13.6",
+        "express": "^4.22.1",
+        "form-data": "^4.0.0"
+    }
+}
