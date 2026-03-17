@@ -1,0 +1,5 @@
+{
+    "/getOrdersByUser/:userId": "/orders?userId=:userId",
+    "/users/:userId/orders": "/orders?userId=:userId"
+  }
+  

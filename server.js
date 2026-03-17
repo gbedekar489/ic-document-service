@@ -1,18 +1,18 @@
 // server.js
 const express = require("express");
 const axios = require('axios');
-//const FormData = require('form-data');
-//const jsonServer = require("json-server");
+const FormData = require('form-data');
+const jsonServer = require("json-server");
 const sgMail = require('@sendgrid/mail');
 
 const app = express();
-//const router = jsonServer.router("db.json");
-//const middlewares = jsonServer.defaults();
+const router = jsonServer.router("db.json");
+const middlewares = jsonServer.defaults();
 //const rewriter = jsonServer.rewriter(require('./routes.json'));
 //app.use(rewriter);
 
 // Middleware
-//app.use(middlewares);
+app.use(middlewares);
 app.use(express.json());
 
 const AEP_API_BASE = 'https://platform.adobe.io';
@@ -29,7 +29,7 @@ const AEM_BEARER = 'Basic Z2VlYmVlOmFkbWlu';                // e.g. "Bearer eyJ.
 //const INTERNAL_API_KEY = process.env.INTERNAL_API_KEY;    // Optional: simple protection
 
 // SendGrid config (required for /generate-and-send)
-const SENDGRID_API_KEY = '';    // required for send
+const SENDGRID_API_KEY = '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';    // required for send
 const SENDGRID_FROM = 'girishbedekar@outlook.com';         // verified sender e.g. "noreply@yourdomain.com"
 if (SENDGRID_API_KEY) {
   sgMail.setApiKey(SENDGRID_API_KEY);
@@ -140,6 +140,34 @@ async function fetchPdfBuffer(documentId, userId, auth) {
   return Buffer.from(resp.data);
 }
 
+app.get("/getOrdersByUser/:userId", (req, res) => {
+  const userId = Number(req.params.userId);
+  const db = router.db; // lowdb instance
+  const orders = db.get("orders").filter({ userId }).value();
+
+  // Detect AEM: (1) explicit query flag ?_aem=1, (2) Accept header containing 'application/aem',
+  // or (3) User-Agent containing 'AEM'. Adjust detection rules if needed.
+  const accept = (req.headers["accept"] || "").toLowerCase();
+  const ua = (req.headers["user-agent"] || "").toLowerCase();
+  const isAem =
+    req.query._aem === "1" ||
+    accept.includes("application/aem") ||
+    /aem/.test(ua);
+
+  if (isAem) {
+    // AEM-friendly: return raw array
+    return res.json(orders);
+  }
+
+  // Default: backward-compatible wrapper
+  return res.json({ orders });
+});
+app.get("/users/:userId/orders", (req, res) => {
+  const userId = Number(req.params.userId);
+  const db = router.db;
+  const orders = db.get("orders").filter({ userId }).value();
+  return res.json({ orders });
+});
 
 /**
  * POST /generate-pdf-base64
@@ -320,6 +348,10 @@ app.post('/generate-and-send', async (req, res) => {
   }
 });
 
+// Mount json-server router (keeps your existing mock endpoints)
+const rewriter = jsonServer.rewriter(require('./routes.json'));
+app.use(rewriter);
+app.use(router);
 
 // Start server
 const port = process.env.PORT || 3000;

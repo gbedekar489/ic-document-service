@@ -1,0 +1,99 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "firstName": "John",
+      "lastName": "Smith",
+      "mailingAddress": {
+        "address": "626 Main Street",
+        "city": "Phoenix",
+        "state": "Mississippi",
+        "postalCode": "29112",
+        "country": "United States"
+      }
+    },
+    {
+      "id": 2,
+      "firstName": "Emily",
+      "lastName": "Johnson",
+      "mailingAddress": {
+        "address": "1458 Market Street",
+        "city": "San Francisco",
+        "state": "California",
+        "postalCode": "94103",
+        "country": "United States"
+      }
+    }
+  ],
+
+  "orders": [
+    {
+      "id": 1,
+      "userId": 1,
+      "user": {
+        "id": 1,
+        "firstName": "John",
+        "lastName": "Smith",
+        "mailingAddress": {
+          "address": "626 Main Street",
+          "city": "Phoenix",
+          "state": "Mississippi",
+          "postalCode": "29112",
+          "country": "United States"
+        }
+      },
+      "products": [
+        {
+          "id": 1,
+          "title": "Essence Mascara Lash Princess",
+          "description": "Popular mascara with intense volume effect",
+          "price": 9.99,
+          "quantity": 2
+        },
+        {
+          "id": 2,
+          "title": "Maybelline Fit Me Foundation",
+          "description": "Natural coverage liquid foundation",
+          "price": 7.49,
+          "quantity": 1
+        }
+      ],
+      "total": 27.47,
+      "createdAt": "2026-02-01T10:15:30Z"
+    },
+    {
+      "id": 2,
+      "userId": 2,
+      "user": {
+        "id": 2,
+        "firstName": "Emily",
+        "lastName": "Johnson",
+        "mailingAddress": {
+          "address": "1458 Market Street",
+          "city": "San Francisco",
+          "state": "California",
+          "postalCode": "94103",
+          "country": "United States"
+        }
+      },
+      "products": [
+        {
+          "id": 1,
+          "title": "Essence Mascara Lash Princess",
+          "description": "Popular mascara with intense volume effect",
+          "price": 9.99,
+          "quantity": 1
+        },
+        {
+          "id": 2,
+          "title": "Maybelline Fit Me Foundation",
+          "description": "Natural coverage liquid foundation",
+          "price": 7.49,
+          "quantity": 2
+        }
+      ],
+      "total": 24.97,
+      "createdAt": "2026-02-02T14:45:00Z"
+    }
+  ]
+}
