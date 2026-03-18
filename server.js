@@ -20,6 +20,7 @@ const ACCESS_TOKEN = process.env.AEP_ACCESS_TOKEN;      // set this in .env
 const API_KEY = process.env.AEP_API_KEY;                // x-api-key
 const ORG_ID = process.env.AEP_ORG_ID;                  // x-gw-ims-org-id
 const SANDBOX = process.env.AEP_SANDBOX || '';          // optional x-sandbox-name
+const SENDGRID_API_KEY = process.env.SEND-GRID-API-KEY;
 
 // --- CONFIG (env) ---
 const AEM_COMM_BASE =
@@ -29,7 +30,7 @@ const AEM_BEARER = 'Basic Z2VlYmVlOmFkbWlu';                // e.g. "Bearer eyJ.
 //const INTERNAL_API_KEY = process.env.INTERNAL_API_KEY;    // Optional: simple protection
 
 // SendGrid config (required for /generate-and-send)
-const SENDGRID_API_KEY = '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';    // required for send
+
 const SENDGRID_FROM = 'girishbedekar@outlook.com';         // verified sender e.g. "noreply@yourdomain.com"
 if (SENDGRID_API_KEY) {
   sgMail.setApiKey(SENDGRID_API_KEY);
