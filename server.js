@@ -20,7 +20,7 @@ const ACCESS_TOKEN = process.env.AEP_ACCESS_TOKEN;      // set this in .env
 const API_KEY = process.env.AEP_API_KEY;                // x-api-key
 const ORG_ID = process.env.AEP_ORG_ID;                  // x-gw-ims-org-id
 const SANDBOX = process.env.AEP_SANDBOX || '';          // optional x-sandbox-name
-const SENDGRID_API_KEY = process.env.SEND-GRID-API-KEY;
+const SENDGRID_API_KEY = process.env.SEND_GRID_API_KEY;
 
 // --- CONFIG (env) ---
 const AEM_COMM_BASE =
