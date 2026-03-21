@@ -108,12 +108,12 @@ app.get('/health', (req, res) => res.json({ status: 'ok' }));
  * Helper: fetch PDF buffer from AEM Communications
  * returns: { buffer, status } or throws
  */
-async function fetchPdfBuffer(documentId, userId, auth) {
+async function fetchPdfBuffer(documentId, serviceParams = {} {
   const url = `https://author-p133654-e1305513.adobeaemcloud.com/adobe/communications/${documentId}/pdf`;
   const optionsJson = JSON.stringify({
     prefill: {
       serviceName: 'IC_FDM',
-      serviceParams: { userId }
+      serviceParams: serviceParams ||{}
     }
   });
 
@@ -191,7 +191,7 @@ app.post('/generate-pdf-base64', async (req, res) => {
     if (!aemAuth) return res.status(401).json({ error: 'missing AEM Authorization' });
 
     const aemUrl = `${AEM_COMM_BASE}/${documentId}/pdf`;
-    const pdfBuffer = await fetchPdfBuffer(documentId, userId, aemAuth);
+    const pdfBuffer = await fetchPdfBuffer(documentId, {"userId":userId});
 
 
 
