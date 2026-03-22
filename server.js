@@ -19,6 +19,7 @@ app.use(express.static(path.join(__dirname)));
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
+app.use("/api", middlewares, router);
 
 const AEP_API_BASE = 'https://platform.adobe.io';
 const ACCESS_TOKEN = process.env.AEP_ACCESS_TOKEN;      // set this in .env
