@@ -1,25 +1,37 @@
-// server.js
 const express = require("express");
-const path = require('path');
-const axios = require('axios');
-const FormData = require('form-data');
+const path = require("path");
+const axios = require("axios");
+const FormData = require("form-data");
 const jsonServer = require("json-server");
-const sgMail = require('@sendgrid/mail');
+const sgMail = require("@sendgrid/mail");
 
 const app = express();
 const router = jsonServer.router("db.json");
 const middlewares = jsonServer.defaults();
-//const rewriter = jsonServer.rewriter(require('./routes.json'));
-//app.use(rewriter);
-
-// Middleware
-app.use(middlewares);
 app.use(express.json());
+
+// Serve static files first
 app.use(express.static(path.join(__dirname)));
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html'));
+
+// Homepage
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "index.html"));
 });
-app.use("/api", middlewares, router);
+
+// Your custom API routes here
+// app.post('/generate-pdf-base64', ...)
+
+// Mount json-server under /api only
+const rewriter = jsonServer.rewriter(require("./routes.json"));
+app.use("/api", middlewares);
+app.use("/api", rewriter);
+app.use("/api", router);
+
+// Start server
+const port = process.env.PORT || 10000;
+app.listen(port, () => {
+  console.log(`Server running on port ${port}`);
+});
 
 const AEP_API_BASE = 'https://platform.adobe.io';
 const ACCESS_TOKEN = process.env.AEP_ACCESS_TOKEN;      // set this in .env
@@ -355,13 +367,3 @@ app.post('/generate-and-send', async (req, res) => {
   }
 });
 
-// Mount json-server router (keeps your existing mock endpoints)
-const rewriter = jsonServer.rewriter(require('./routes.json'));
-app.use(rewriter);
-app.use(router);
-
-// Start server
-const port = process.env.PORT || 3000;
-app.listen(port, () => {
-  console.log(`Server running on port ${port}`);
-});
