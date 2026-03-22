@@ -1,5 +1,6 @@
 // server.js
 const express = require("express");
+const path = require('path');
 const axios = require('axios');
 const FormData = require('form-data');
 const jsonServer = require("json-server");
@@ -14,6 +15,10 @@ const middlewares = jsonServer.defaults();
 // Middleware
 app.use(middlewares);
 app.use(express.json());
+app.use(express.static(path.join(__dirname)));
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'index.html'));
+});
 
 const AEP_API_BASE = 'https://platform.adobe.io';
 const ACCESS_TOKEN = process.env.AEP_ACCESS_TOKEN;      // set this in .env
