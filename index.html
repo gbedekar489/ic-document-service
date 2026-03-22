@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PDF Viewer</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 24px;
+      background: #f5f7fb;
+      color: #1f2937;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+    }
+
+    h1 {
+      margin-top: 0;
+      font-size: 28px;
+    }
+
+    .row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      min-width: 240px;
+      flex: 1;
+    }
+
+    label {
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    input {
+      padding: 10px 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin: 16px 0 20px;
+    }
+
+    button {
+      padding: 10px 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .primary {
+      background: #2563eb;
+      color: white;
+    }
+
+    .secondary {
+      background: #e5e7eb;
+      color: #111827;
+    }
+
+    .danger {
+      background: #dc2626;
+      color: white;
+    }
+
+    .status {
+      margin: 12px 0;
+      font-size: 14px;
+      min-height: 20px;
+    }
+
+    .viewer {
+      width: 100%;
+      height: 780px;
+      border: 1px solid #d1d5db;
+      border-radius: 10px;
+      overflow: hidden;
+      background: #fafafa;
+    }
+
+    embed {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    .note {
+      margin-top: 12px;
+      font-size: 13px;
+      color: #6b7280;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>PDF Viewer</h1>
+
+    <div class="row">
+      <div class="field">
+        <label for="apiUrl">API URL</label>
+        <input id="apiUrl" value="https://your-api.onrender.com/generate-pdf-base64" />
+      </div>
+
+      <div class="field">
+        <label for="documentId">Document ID</label>
+        <input id="documentId" placeholder="Enter documentId" />
+      </div>
+
+      <div class="field">
+        <label for="userId">User ID</label>
+        <input id="userId" placeholder="Enter userId" />
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="primary" onclick="loadPdf()">Load PDF</button>
+      <button class="secondary" onclick="downloadPdf()">Download PDF</button>
+      <button class="secondary" onclick="printPdf()">Print PDF</button>
+      <button class="danger" onclick="clearViewer()">Clear</button>
+    </div>
+
+    <div id="status" class="status"></div>
+
+    <div class="viewer">
+      <embed id="pdfEmbed" type="application/pdf" />
+    </div>
+
+    <div class="note">
+      This page calls the API, reads <code>{ "pdfBase64": "..." }</code>, converts it to a PDF blob, and displays it without using an iframe.
+    </div>
+  </div>
+
+  <script>
+    let currentPdfBase64 = "";
+    let currentPdfUrl = "";
+
+    function setStatus(message, isError = false) {
+      const el = document.getElementById("status");
+      el.textContent = message;
+      el.style.color = isError ? "#b91c1c" : "#065f46";
+    }
+
+    function clearViewer() {
+      const embed = document.getElementById("pdfEmbed");
+      embed.removeAttribute("src");
+
+      if (currentPdfUrl) {
+        URL.revokeObjectURL(currentPdfUrl);
+        currentPdfUrl = "";
+      }
+
+      currentPdfBase64 = "";
+      setStatus("Viewer cleared.");
+    }
+
+    function base64ToBlob(base64) {
+      const byteCharacters = atob(base64);
+      const byteNumbers = new Array(byteCharacters.length);
+
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+
+      const byteArray = new Uint8Array(byteNumbers);
+      return new Blob([byteArray], { type: "application/pdf" });
+    }
+
+    async function loadPdf() {
+      try {
+        const apiUrl = document.getElementById("apiUrl").value.trim();
+        const documentId = document.getElementById("documentId").value.trim();
+        const userId = document.getElementById("userId").value.trim();
+
+        if (!apiUrl) {
+          setStatus("Missing API URL.", true);
+          return;
+        }
+
+        if (!documentId) {
+          setStatus("Missing documentId.", true);
+          return;
+        }
+
+        if (!userId) {
+          setStatus("Missing userId.", true);
+          return;
+        }
+
+        setStatus("Loading PDF...");
+
+        const response = await fetch(apiUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            documentId,
+            userId
+          })
+        });
+
+        if (!response.ok) {
+          const text = await response.text();
+          throw new Error(`API error ${response.status}: ${text}`);
+        }
+
+        const data = await response.json();
+
+        if (!data || !data.pdfBase64) {
+          throw new Error("API response did not include pdfBase64.");
+        }
+
+        currentPdfBase64 = data.pdfBase64;
+
+        const blob = base64ToBlob(currentPdfBase64);
+
+        if (currentPdfUrl) {
+          URL.revokeObjectURL(currentPdfUrl);
+        }
+
+        currentPdfUrl = URL.createObjectURL(blob);
+        document.getElementById("pdfEmbed").src = currentPdfUrl;
+
+        setStatus("PDF loaded successfully.");
+      } catch (err) {
+        console.error(err);
+        setStatus(err.message || "Failed to load PDF.", true);
+      }
+    }
+
+    function downloadPdf() {
+      if (!currentPdfBase64) {
+        setStatus("No PDF loaded yet.", true);
+        return;
+      }
+
+      const link = document.createElement("a");
+      link.href = "data:application/pdf;base64," + currentPdfBase64;
+      link.download = "document.pdf";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    function printPdf() {
+      if (!currentPdfUrl) {
+        setStatus("No PDF loaded yet.", true);
+        return;
+      }
+
+      const printWindow = window.open(currentPdfUrl, "_blank");
+      if (!printWindow) {
+        setStatus("Popup blocked. Allow popups for printing.", true);
+        return;
+      }
+
+      printWindow.onload = function () {
+        printWindow.focus();
+        printWindow.print();
+      };
+    }
+  </script>
+</body>
+</html>
