@@ -201,15 +201,27 @@ app.post('/generate-pdf-base64', async (req, res) => {
     if (!documentId) {
       return res.status(400).json({ error: 'missing documentId' });
     }
-    
-    const userId = req.body.userId || req.query.userId;
-    if (!userId) return res.status(400).json({ error: 'missing userId' });
-
+    const { userId, entityNS, entityID } = req.body;
+   
     const aemAuth = AEM_BEARER || req.header('Authorization');
     if (!aemAuth) return res.status(401).json({ error: 'missing AEM Authorization' });
+    if (entityNS && entityID) {
+      serviceParams = {
+        entityNS,
+        entityID
+      };
+    } else if (userId) {
+      serviceParams = {
+        userId
+      };
+    } else {
+      return res.status(400).json({
+        error: 'missing required parameters (userId OR entityNS/entityID)'
+      });
+    }
 
     const aemUrl = `${AEM_COMM_BASE}/${documentId}/pdf`;
-    const pdfBuffer = await fetchPdfBuffer(documentId, {"userId":userId});
+    const pdfBuffer = await fetchPdfBuffer(documentId, serviceParams);
 
 
 
