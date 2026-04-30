@@ -129,13 +129,14 @@
           <option value="">-- Select Document --</option>
           <option value="f35ea2d9-6164-4791-8943-c56a6085eb91">Invoice</option>
           <option value="doc-2222-3333-4444-5555">Statement</option>
-          <option value="doc-aaaa-bbbb-cccc-dddd">Welcome Letter</option>
+          <option value="4c5b6c98-9206-4295-9c4f-49c26cce1d0f">Welcome Letter</option>
         </select>
       </div>
       <div class="field">
-        <label for="userId">User ID</label>
-        <input id="userId" placeholder="Enter userId value of either 1 or 2" />
+        <label for="inputParameter">Input</label>
+        <input id="inputParameter" placeholder="Enter userId or email" />
       </div>
+      
     </div>
 
     <div class="actions">
@@ -195,7 +196,11 @@
       try {
         const apiUrl = document.getElementById("apiUrl").value.trim();
         const documentId = document.getElementById("documentId").value.trim();
-        const userId = document.getElementById("userId").value.trim();
+        const input = document.getElementById("inputParameter").value.trim();
+        if (!input) {
+            setStatus("Input is required", true);
+          return;
+        }
 
         if (!apiUrl) {
           setStatus("Missing API URL.", true);
@@ -207,22 +212,33 @@
           return;
         }
 
-        if (!userId) {
-          setStatus("Missing userId.", true);
-          return;
-        }
+                setStatus("Loading PDF...");
+          let payload = { documentId };
 
-        setStatus("Loading PDF...");
+        if (documentId === "4c5b6c98-9206-4295-9c4f-49c26cce1d0f") {
+            const email = input;
+            payload.entityNS = "email";
+            payload.entityID = email;
+
+        }
+    
+       else {
+              const userId = input;
+              payload.userId = userId;
+            }
+
 
         const response = await fetch(apiUrl, {
           method: "POST",
           headers: {
             "Content-Type": "application/json"
           },
-          body: JSON.stringify({
+          body: JSON.stringify(payload)
+          
+          /* body: JSON.stringify({
             documentId,
             userId
-          })
+          }) */
         });
 
         if (!response.ok) {
