@@ -157,7 +157,9 @@
       <button class="secondary" onclick="downloadPdf()">Download PDF</button>
       <button class="secondary" onclick="printPdf()">Print PDF</button>
       <button class="danger" onclick="clearViewer()">Clear</button>
-      <button class="secondary" onclick="emailPdf()">Email PDF</button>
+      <button id="emailBtn" class="secondary" onclick="emailPdf()" style="display:none;">
+        Email PDF
+      </button>
     </div>
 
     <div id="status" class="status"></div>
@@ -192,6 +194,7 @@
 
       currentPdfBase64 = "";
       setStatus("Viewer cleared.");
+      document.getElementById("emailBtn").style.display = "none";
     }
 
     function base64ToBlob(base64) {
@@ -319,6 +322,7 @@
         document.getElementById("pdfEmbed").src = currentPdfUrl;
 
         setStatus("PDF loaded successfully.");
+        document.getElementById("emailBtn").style.display = "inline-block";
       } catch (err) {
         console.error(err);
         setStatus(err.message || "Failed to load PDF.", true);
