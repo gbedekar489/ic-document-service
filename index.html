@@ -205,6 +205,47 @@
       const byteArray = new Uint8Array(byteNumbers);
       return new Blob([byteArray], { type: "application/pdf" });
     }
+  async function emailPdf() {
+  try {
+    if (!currentPdfBase64) {
+      setStatus("Load a PDF first.", true);
+      return;
+    }
+
+    const recipientEmail = document.getElementById("recipientEmail").value.trim();
+    if (!recipientEmail) {
+      setStatus("Recipient email is required.", true);
+      return;
+    }
+
+    setStatus("Sending email...");
+
+    const response = await fetch("https://ic-document-service.onrender.com/email-pdf", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        pdfBase64: currentPdfBase64,
+        to: recipientEmail,
+        subject: "Your PDF document",
+        text: "Please find attached.",
+        filename: "document.pdf"
+      })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || "Failed to send email");
+    }
+
+    setStatus("Email sent successfully.");
+  } catch (err) {
+    console.error(err);
+    setStatus(err.message || "Failed to send email.", true);
+  }
+}
 
     async function loadPdf() {
       try {
