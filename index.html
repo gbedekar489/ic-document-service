@@ -145,6 +145,10 @@
         <label for="inputParameter">Input</label>
         <input id="inputParameter" placeholder="Enter userId or email" />
       </div>
+      <div class="field">
+        <label for="recipientEmail">Recipient Email</label>
+        <input id="recipientEmail" placeholder="Enter recipient email" />
+      </div>
       
     </div>
 
@@ -153,6 +157,7 @@
       <button class="secondary" onclick="downloadPdf()">Download PDF</button>
       <button class="secondary" onclick="printPdf()">Print PDF</button>
       <button class="danger" onclick="clearViewer()">Clear</button>
+      <button class="secondary" onclick="emailPdf()">Email PDF</button>
     </div>
 
     <div id="status" class="status"></div>

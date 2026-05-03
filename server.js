@@ -49,7 +49,7 @@ const AEM_BEARER = 'Basic Z2VlYmVlOmFkbWlu';                // e.g. "Bearer eyJ.
 
 // SendGrid config (required for /generate-and-send)
 
-const SENDGRID_FROM = 'girishbedekar@outlook.com';         // verified sender e.g. "noreply@yourdomain.com"
+const SENDGRID_FROM = 'newgeebee@outlook.com';         // verified sender e.g. "noreply@yourdomain.com"
 if (SENDGRID_API_KEY) {
   sgMail.setApiKey(SENDGRID_API_KEY);
 }
