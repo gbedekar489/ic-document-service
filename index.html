@@ -222,6 +222,8 @@
     }
 
     setStatus("Sending email...");
+    console.log("pdf starts with:", currentPdfBase64.slice(0, 20));
+console.log("pdf length:", currentPdfBase64.length);
 
     const response = await fetch("https://ic-document-service.onrender.com/email-pdf", {
       method: "POST",
