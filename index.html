@@ -240,6 +240,13 @@ console.log("pdf length:", currentPdfBase64.length);
     });
 
     const data = await response.json();
+    const contentType = response.headers.get("content-type") || "";
+    const rawText = await response.text();
+
+    console.log("status:", response.status);
+    console.log("content-type:", contentType);
+    console.log("raw response:", rawText);
+
 
     if (!response.ok) {
       throw new Error(data.error || "Failed to send email");
