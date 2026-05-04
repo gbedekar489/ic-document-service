@@ -126,12 +126,12 @@ app.get('/health', (req, res) => res.json({ status: 'ok' }));
  * Helper: fetch PDF buffer from AEM Communications
  * returns: { buffer, status } or throws
  */
-async function fetchPdfBuffer(documentId, serviceParams = {}) {
+ async function fetchPdfBuffer(documentId, serviceParams = {}) {
   const url = `https://author-p133654-e1305513.adobeaemcloud.com/adobe/communications/${documentId}/pdf`;
   const optionsJson = JSON.stringify({
     prefill: {
       serviceName: 'IC_FDM',
-      serviceParams: serviceParams ||{}
+      serviceParams: serviceParams || {}
     }
   });
 
@@ -141,7 +141,7 @@ async function fetchPdfBuffer(documentId, serviceParams = {}) {
   const resp = await axios.post(url, form, {
     headers: {
       ...form.getHeaders(),
-      Authorization: 'Basic Z2VlYmVlOmFkbWlu'
+      Authorization: AEM_BEARER
     },
     responseType: 'arraybuffer',
     validateStatus: null
@@ -149,7 +149,11 @@ async function fetchPdfBuffer(documentId, serviceParams = {}) {
 
   if (resp.status < 200 || resp.status >= 300) {
     let bodyPreview = '';
-    try { bodyPreview = Buffer.from(resp.data || '', 'binary').toString('utf8').slice(0, 400); } catch(e){ bodyPreview = '<non-text response>'; }
+    try {
+      bodyPreview = Buffer.from(resp.data || '', 'binary').toString('utf8').slice(0, 400);
+    } catch (e) {
+      bodyPreview = '<non-text response>';
+    }
     const err = new Error('communications service error');
     err.status = resp.status;
     err.bodyPreview = bodyPreview;
@@ -158,7 +162,6 @@ async function fetchPdfBuffer(documentId, serviceParams = {}) {
 
   return Buffer.from(resp.data);
 }
-
 app.get("/getOrdersByUser/:userId", (req, res) => {
   const userId = Number(req.params.userId);
   const db = router.db; // lowdb instance
@@ -240,35 +243,59 @@ app.post('/generate-pdf-base64', async (req, res) => {
 
 app.post('/email-pdf', async (req, res) => {
   try {
-    // Validate SendGrid config
     if (!SENDGRID_API_KEY || !SENDGRID_FROM) {
       return res.status(500).json({
         error: 'SendGrid not configured. Set SENDGRID_API_KEY and SENDGRID_FROM env vars.'
       });
     }
 
-    const { pdfBase64, to, subject, text, filename } = req.body;
+    const {
+      documentId,
+      userId,
+      entityNS,
+      entityID,
+      to,
+      subject,
+      text,
+      filename
+    } = req.body;
+
+    if (!documentId) {
+      return res.status(400).json({ error: 'missing documentId' });
+    }
 
     if (!to) {
       return res.status(400).json({ error: 'missing recipient email (to)' });
     }
 
-    if (!pdfBase64) {
-      return res.status(400).json({ error: 'missing pdfBase64' });
+    let serviceParams = {};
+
+    if (entityNS && entityID) {
+      serviceParams = { entityNS, entityID };
+    } else if (userId) {
+      serviceParams = { userId };
+    } else {
+      return res.status(400).json({
+        error: 'missing required parameters (userId OR entityNS/entityID)'
+      });
     }
 
-    // Remove optional data URL prefix if present
-    const cleanedBase64 = pdfBase64.replace(/^data:application\/pdf;base64,/, '');
+    const aemAuth = AEM_BEARER || req.header('Authorization');
+    if (!aemAuth) {
+      return res.status(401).json({ error: 'missing AEM Authorization' });
+    }
 
-    // Send via SendGrid
+    const pdfBuffer = await fetchPdfBuffer(documentId, serviceParams);
+    const pdfBase64 = pdfBuffer.toString('base64');
+
     const msg = {
-      to: to,
+      to,
       from: SENDGRID_FROM,
       subject: subject || 'Your PDF document',
       text: text || 'Please find attached.',
       attachments: [
         {
-          content: cleanedBase64,
+          content: pdfBase64,
           type: 'application/pdf',
           filename: filename || 'document.pdf',
           disposition: 'attachment'
@@ -284,14 +311,17 @@ app.post('/email-pdf', async (req, res) => {
         ? result[0].statusCode
         : (result && result.statusCode)
     });
-
   } catch (error) {
-    console.error(
-      'email-pdf error',
-      error.response
-        ? (error.response.body || error.response)
-        : error.message || error
-    );
+    if (error.status) {
+      console.error('AEM error', error.status, error.bodyPreview);
+      return res.status(502).json({
+        error: 'communications service error',
+        status: error.status,
+        bodyPreview: error.bodyPreview
+      });
+    }
+
+    console.error('email-pdf error', error.response ? (error.response.body || error.response) : error.message || error);
 
     const errBody =
       error.response &&
