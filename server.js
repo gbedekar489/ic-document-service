@@ -201,6 +201,42 @@ app.post("/submit", (req, res) => {
   });
 });
 
+app.post('/generate-pdf', async (req, res) => {
+  try {
+    const documentId = req.body.documentId || req.query.documentId;
+
+    if (!documentId) {
+      return res.status(400).json({ error: 'missing documentId' });
+    }
+
+    const { userId, entityNS, entityID } = req.body;
+
+    let serviceParams = {};
+
+    if (entityNS && entityID) {
+      serviceParams = { entityNS, entityID };
+    } else if (userId) {
+      serviceParams = { userId };
+    } else {
+      return res.status(400).json({
+        error: 'missing required parameters (userId OR entityNS/entityID)'
+      });
+    }
+
+    const pdfBuffer = await fetchPdfBuffer(documentId, serviceParams);
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', 'inline; filename="generated.pdf"');
+
+    return res.send(pdfBuffer);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      error: 'Failed to generate PDF'
+    });
+  }
+});
+
 /**
  * POST /generate-pdf-base64
  * Body: { "userId": "12345" }
