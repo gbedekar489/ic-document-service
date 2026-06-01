@@ -9,6 +9,28 @@ const app = express();
 const router = jsonServer.router("db.json");
 const middlewares = jsonServer.defaults();
 app.use(express.json());
+const allowedOrigins = [
+  "https://publish-p133654-e1305513.adobeaemcloud.com",
+  "https://author-p133654-e1305513.adobeaemcloud.com"
+];
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+    res.setHeader("Vary", "Origin");
+    res.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+    res.setHeader("Access-Control-Allow-Credentials", "true");
+  }
+
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(204);
+  }
+
+  next();
+});
+
 
 // Serve static files first
 app.use(express.static(path.join(__dirname)));
