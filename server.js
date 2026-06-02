@@ -223,15 +223,20 @@ app.post("/submit", (req, res) => {
   });
 });
 
-app.post('/generate-pdf', async (req, res) => {
+app.post("/generate-pdf", async (req, res) => {
   try {
-    const documentId = req.body.documentId || req.query.documentId;
+    // Support either direct fields or nested under formData
+    const body = req.body || {};
+    const source = body.formData || body.payload || body;
+
+    const documentId = source.documentId || body.documentId || req.query.documentId;
+    const userId = source.userId || body.userId || req.query.userId;
+    const entityNS = source.entityNS || body.entityNS;
+    const entityID = source.entityID || body.entityID;
 
     if (!documentId) {
-      return res.status(400).json({ error: 'missing documentId' });
+      return res.status(400).json({ error: "missing documentId" });
     }
-
-    const { userId, entityNS, entityID } = req.body;
 
     let serviceParams = {};
 
@@ -241,21 +246,27 @@ app.post('/generate-pdf', async (req, res) => {
       serviceParams = { userId };
     } else {
       return res.status(400).json({
-        error: 'missing required parameters (userId OR entityNS/entityID)'
+        error: "missing required parameters (userId OR entityNS/entityID)"
       });
     }
 
     const pdfBuffer = await fetchPdfBuffer(documentId, serviceParams);
 
-    res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', 'inline; filename="generated.pdf"');
-
-    return res.send(pdfBuffer);
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", 'inline; filename="generated.pdf"');
+    return res.status(200).send(pdfBuffer);
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({
-      error: 'Failed to generate PDF'
-    });
+    if (error.status) {
+      console.error("AEM error", error.status, error.bodyPreview);
+      return res.status(502).json({
+        error: "communications service error",
+        status: error.status,
+        bodyPreview: error.bodyPreview
+      });
+    }
+
+    console.error("wrapper error", error.message || error);
+    return res.status(500).json({ error: "Failed to generate PDF" });
   }
 });
 
