@@ -222,7 +222,71 @@ app.post("/submit", (req, res) => {
     message: "Submission received"
   });
 });
+app.post('/send-pdf-email', async (req, res) => {
+  try {
+    if (!SENDGRID_API_KEY || !SENDGRID_FROM) {
+      return res.status(500).json({
+        error: 'SendGrid not configured. Set SENDGRID_API_KEY and SENDGRID_FROM env vars.'
+      });
+    }
 
+    const {
+      to,
+      pdfBase64,
+      subject,
+      text,
+      filename
+    } = req.body;
+
+    if (!to) {
+      return res.status(400).json({ error: 'missing recipient email (to)' });
+    }
+
+    if (!pdfBase64) {
+      return res.status(400).json({ error: 'missing pdfBase64' });
+    }
+
+    const msg = {
+      to,
+      from: SENDGRID_FROM,
+      subject: subject || 'Your PDF document',
+      text: text || 'Please find attached.',
+      attachments: [
+        {
+          content: pdfBase64,
+          type: 'application/pdf',
+          filename: filename || 'document.pdf',
+          disposition: 'attachment'
+        }
+      ]
+    };
+
+    const result = await sgMail.send(msg);
+
+    return res.json({
+      status: 'sent',
+      sendgridResponse: Array.isArray(result)
+        ? result[0].statusCode
+        : result?.statusCode
+    });
+  } catch (error) {
+    console.error(
+      'email-pdf error',
+      error.response ? (error.response.body || error.response) : error.message || error
+    );
+
+    const errBody =
+      error.response &&
+      (error.response.body || error.response.data)
+        ? error.response.body || error.response.data
+        : undefined;
+
+    return res.status(500).json({
+      error: 'Failed to send email',
+      details: errBody || error.message
+    });
+  }
+});
 app.post("/generate-pdf", async (req, res) => {
   try {
     // Support either direct fields or nested under formData
