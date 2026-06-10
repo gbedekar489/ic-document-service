@@ -434,13 +434,13 @@ app.post('/email-pdf', async (req, res) => {
     const msg = {
       to,
       from: SENDGRID_FROM,
-      subject: subject || 'Your PDF document',
-      text: text || 'Please find attached.',
+      subject: subject || 'Thank you for your interest in Adobe Cloud Solutions',
+      text: text || 'Please find additional documentation on the solutions requested',
       attachments: [
         {
           content: pdfBase64,
           type: 'application/pdf',
-          filename: filename || 'document.pdf',
+          filename: filename || 'Adobe_Cloud_Solutions.pdf',
           disposition: 'attachment'
         }
       ]
