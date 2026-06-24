@@ -9,6 +9,7 @@ const app = express();
 const router = jsonServer.router("db.json");
 const middlewares = jsonServer.defaults();
 app.use(express.json());
+app.use(express.static(path.join(__dirname, "public")));
 const allowedOrigins = [
   "https://publish-p133654-e1305513.adobeaemcloud.com",
   "https://author-p133654-e1305513.adobeaemcloud.com"
@@ -35,10 +36,17 @@ app.use((req, res, next) => {
 // Serve static files first
 app.use(express.static(path.join(__dirname)));
 
+
 // Homepage
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "index.html"));
 });
+
+
+app.get("/associate", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "associate-ui.html"));
+});
+
 
 // Your custom API routes here
 // app.post('/generate-pdf-base64', ...)

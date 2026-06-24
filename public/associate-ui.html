@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Associate UI Integration</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      max-width: 720px;
+      margin: 40px auto;
+      padding: 20px;
+    }
+    .form-group { margin: 16px 0; }
+    label { display: block; margin-bottom: 6px; font-weight: 600; }
+    input, textarea, button {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 10px;
+      border-radius: 6px;
+    }
+    input, textarea {
+      border: 1px solid #ccc;
+    }
+    textarea {
+      height: 90px;
+      font-family: monospace;
+    }
+    button {
+      margin-top: 10px;
+      border: none;
+      cursor: pointer;
+    }
+    .btn-primary {
+      background: #007bff;
+      color: white;
+    }
+    .error {
+      color: #c00;
+      display: none;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Launch Associate UI</h1>
+
+  <form id="form">
+    <div class="form-group">
+      <label for="icId">IC ID *</label>
+      <input type="text" id="icId" required placeholder="4c5b6c98-9206-4295-9c4f-49c26cce1d0f" value="4c5b6c98-9206-4295-9c4f-49c26cce1d0f" />
+    </div>
+
+    <div class="form-group">
+      <label for="serviceName">Prefill Service</label>
+      <input type="text" id="serviceName" placeholder="FdmTestData" value="IC_FDM" />
+    </div>
+
+    <div class="form-group">
+      <label for="serviceParams">Service Parameters (JSON)</label>
+      <textarea id="serviceParams">{}</textarea>
+      <div id="paramsError" class="error">Invalid JSON format</div>
+    </div>
+
+    <div class="form-group">
+      <label for="options">Options (JSON)</label>
+      <textarea id="options">{}</textarea>
+      <div id="optionsError" class="error">Invalid JSON format</div>
+    </div>
+
+    <button type="button" class="btn-primary" id="launchBtn">Launch Associate UI</button>
+  </form>
+
+  <script>
+    // Set this from your Node app (template, env var, or config)
+    const AEM_URL = "https://author-p133654-e1305513.adobeaemcloud.com/libs/fd/associate/ui.html"
+    //const AEM_URL = "https://publish-p{program-id}-e{env-id}.adobeaemcloud.com/libs/fd/associate/ui.html";
+
+    function parseJson(value, errorEl) {
+      try {
+        errorEl.style.display = "none";
+        return JSON.parse(value || "{}");
+      } catch {
+        errorEl.style.display = "block";
+        return null;
+      }
+    }
+
+    document.getElementById("launchBtn").addEventListener("click", () => {
+      const icId = document.getElementById("icId").value.trim();
+      if (!icId) {
+        alert("IC ID is required");
+        return;
+      }
+
+      const params = parseJson(
+        document.getElementById("serviceParams").value,
+        document.getElementById("paramsError")
+      );
+      const opts = parseJson(
+        document.getElementById("options").value,
+        document.getElementById("optionsError")
+      );
+
+      if (params === null || opts === null) return;
+
+      const data = {
+        id: icId,
+        prefill: {
+          serviceName: document.getElementById("serviceName").value.trim(),
+          serviceParams: params
+        },
+        options: opts
+      };
+
+      const win = window.open(AEM_URL, "_blank");
+      if (!win) {
+        alert("Pop-up blocked. Please allow pop-ups for this site.");
+        return;
+      }
+
+      const handler = (event) => {
+        if (event.data && event.data.type === "READY" && event.data.source === "APP") {
+          win.postMessage({ type: "INIT", source: "PORTAL", data }, "*");
+          window.removeEventListener("message", handler);
+        }
+      };
+
+      window.addEventListener("message", handler);
+
+      setTimeout(() => {
+        if (win && !win.closed) {
+          win.postMessage({ type: "INIT", source: "PORTAL", data }, "*");
+          window.removeEventListener("message", handler);
+        }
+      }, 1000);
+    });
+  </script>
+</body>
+</html>
