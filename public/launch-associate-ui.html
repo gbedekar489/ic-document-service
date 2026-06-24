@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Launch Associate UI</title>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --card: #ffffff;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --line: #dbe3ee;
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --primary-soft: #eff6ff;
+      --success-soft: #f0fdf4;
+      --warn-soft: #fff7ed;
+      --shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+      --radius: 18px;
+      --radius-sm: 12px;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: linear-gradient(180deg, #f8fbff 0%, var(--bg) 100%);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .page {
+      max-width: 1320px;
+      margin: 0 auto;
+      padding: 28px 22px 40px;
+    }
+
+    .header {
+      margin-bottom: 20px;
+    }
+
+    .title {
+      margin: 0 0 8px;
+      font-size: 34px;
+      line-height: 1.15;
+      letter-spacing: -0.03em;
+    }
+
+    .subtitle {
+      margin: 0;
+      color: var(--muted);
+      font-size: 15px;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.75fr) minmax(320px, 0.85fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid rgba(219, 227, 238, 0.9);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .form-card {
+      padding: 18px;
+    }
+
+    .summary-card {
+      padding: 18px;
+      position: sticky;
+      top: 18px;
+    }
+
+    .section {
+      margin-bottom: 18px;
+      padding: 14px;
+      border: 1px solid rgba(219, 227, 238, 0.9);
+      border-radius: var(--radius-sm);
+      background: #fff;
+    }
+
+    .section-title {
+      margin: 0 0 4px;
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .section-help {
+      margin: 0 0 14px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 14px;
+    }
+
+    .field label {
+      font-size: 14px;
+      font-weight: 700;
+      color: #111827;
+    }
+
+    .required {
+      color: #ef4444;
+      margin-left: 2px;
+    }
+
+    .hint {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.35;
+    }
+
+    .input,
+    .select {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #fff;
+      color: var(--text);
+      padding: 12px 14px;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .input:focus,
+    .select:focus {
+      border-color: #93c5fd;
+      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.08);
+    }
+
+    .readonly {
+      background: #f9fafb;
+      color: #374151;
+    }
+
+    .params-wrap {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+
+    .param-group {
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+    }
+
+    .param-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 10px;
+      align-items: flex-start;
+    }
+
+    .param-name {
+      font-size: 14px;
+      font-weight: 700;
+      margin: 0;
+    }
+
+    .param-key {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    .param-note {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 6px;
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 16px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      appearance: none;
+      border: none;
+      border-radius: 14px;
+      padding: 13px 18px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.06s ease, background 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .btn:active {
+      transform: translateY(1px);
+    }
+
+    .btn-primary {
+      background: linear-gradient(180deg, var(--primary) 0%, var(--primary-dark) 100%);
+      color: #fff;
+      box-shadow: 0 12px 26px rgba(37, 99, 235, 0.22);
+    }
+
+    .btn-secondary {
+      background: #eef2ff;
+      color: #3730a3;
+    }
+
+    .summary-block {
+      padding: 14px 0;
+      border-bottom: 1px solid rgba(219, 227, 238, 0.8);
+    }
+
+    .summary-block:last-child {
+      border-bottom: none;
+    }
+
+    .summary-label {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      margin-bottom: 8px;
+      font-weight: 700;
+    }
+
+    .summary-value {
+      font-size: 15px;
+      font-weight: 700;
+      color: #111827;
+      word-break: break-word;
+    }
+
+    .summary-sub {
+      margin-top: 4px;
+      font-size: 13px;
+      color: var(--muted);
+      word-break: break-word;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 10px;
+      border-radius: 999px;
+      background: var(--primary-soft);
+      color: #1d4ed8;
+      font-size: 12px;
+      font-weight: 700;
+      margin-top: 8px;
+    }
+
+    .info-box,
+    .note-box {
+      margin-top: 14px;
+      padding: 14px;
+      border-radius: 14px;
+      border: 1px solid rgba(219, 227, 238, 0.9);
+      background: #fafcff;
+    }
+
+    .info-box {
+      background: var(--primary-soft);
+      border-color: #bfdbfe;
+    }
+
+    .note-box {
+      background: var(--success-soft);
+      border-color: #bbf7d0;
+    }
+
+    .info-title,
+    .note-title {
+      font-size: 13px;
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+
+    .info-text,
+    .note-text {
+      font-size: 13px;
+      line-height: 1.45;
+      color: #374151;
+    }
+
+    .error {
+      margin-top: 6px;
+      font-size: 12px;
+      color: #dc2626;
+      display: none;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    @media (max-width: 980px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .summary-card {
+        position: static;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .page {
+        padding: 18px 14px 28px;
+      }
+
+      .title {
+        font-size: 28px;
+      }
+
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="header">
+      <h1 class="title">Launch Associate UI</h1>
+      <p class="subtitle">Select a document and provide the required fields. No JSON entry is needed.</p>
+    </div>
+
+    <div class="layout">
+      <div class="card form-card">
+        <div class="section">
+          <div class="section-title">Document and Prefill</div>
+          <p class="section-help">Choose the document first. The required service fields will appear automatically.</p>
+
+          <div class="field">
+            <label for="documentId">Document (IC ID) <span class="required">*</span></label>
+            <select id="documentId" class="select"></select>
+            <div class="hint">Choose the Interactive Communication you want to associate.</div>
+          </div>
+
+          <div class="field">
+            <label for="serviceName">Prefill Service <span class="required">*</span></label>
+            <select id="serviceName" class="select"></select>
+            <div class="hint">Select the prefill service to use.</div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-title">Service Parameters</div>
+          <p class="section-help">Provide the values required for the selected document.</p>
+
+          <div class="info-box">
+            <div class="info-title">Fields marked with <span class="required">*</span> are required.</div>
+            <div class="info-text">The form changes when you select a different document.</div>
+          </div>
+
+          <div id="serviceParamsFields" class="params-wrap" style="margin-top: 12px;"></div>
+        </div>
+
+        <div class="section">
+          <div class="section-title">Options</div>
+          <p class="section-help">Optional settings for the Associate UI launch.</p>
+
+          <div class="grid">
+            <div class="field">
+              <label for="openInNewTab">Open target</label>
+              <select id="openInNewTab" class="select">
+                <option value="true" selected>Open in new tab</option>
+                <option value="false">Open in same tab</option>
+              </select>
+            </div>
+
+            <div class="field">
+              <label for="autoLaunch">Auto launch</label>
+              <select id="autoLaunch" class="select">
+                <option value="false" selected>Manual launch</option>
+                <option value="true">Launch after selection</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="btn-row">
+          <button type="button" class="btn btn-secondary" id="resetBtn">Reset</button>
+          <button type="button" class="btn btn-primary" id="launchBtn">Launch Associate UI</button>
+        </div>
+      </div>
+
+      <div class="card summary-card">
+        <div class="summary-block">
+          <div class="summary-label">Document (IC ID)</div>
+          <div id="summaryDocument" class="summary-value">Not selected</div>
+          <div id="summaryDocumentId" class="summary-sub"></div>
+        </div>
+
+        <div class="summary-block">
+          <div class="summary-label">Prefill Service</div>
+          <div id="summaryService" class="summary-value">IC_FDM</div>
+        </div>
+
+        <div class="summary-block">
+          <div class="summary-label">Service Parameters</div>
+          <div id="summaryParams" class="summary-value">0 fields</div>
+          <div id="summaryParamsList" class="summary-sub"></div>
+        </div>
+
+        <div class="summary-block">
+          <div class="summary-label">Launch Status</div>
+          <div id="statusText" class="summary-value">Ready</div>
+          <div id="statusDetail" class="summary-sub">Fill in the fields and launch the Associate UI.</div>
+        </div>
+
+        <div class="note-box">
+          <div class="note-title">Note</div>
+          <div class="note-text">Make sure pop-ups are allowed for this site so the Associate UI can open in a new window.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /**
+     * Replace these with your own documents and field definitions.
+     * Each document controls which inputs appear in the form.
+     */
+    const DOCUMENTS = [
+      {
+        label: "Welcome Kit Letter",
+        id: "4c5b6c98-9206-4295-9c4f-49c26cce1d0f",
+        serviceName: "IC_FDM",
+        params: [
+          {
+            key: "entityID",
+            label: "Entity ID",
+            type: "email",
+            placeholder: "girishbedekar@yahoo.com",
+            required: true,
+            help: "Enter the email address of the recipient."
+          },
+          {
+            key: "entityNS",
+            label: "Entity NS",
+            type: "text",
+            placeholder: "email",
+            required: true,
+            help: "Enter the namespace of the entity."
+          },
+          {
+            key: "firstName",
+            label: "First Name",
+            type: "text",
+            placeholder: "Girish",
+            required: false,
+            help: "Enter the first name."
+          },
+          {
+            key: "lastName",
+            label: "Last Name",
+            type: "text",
+            placeholder: "Bedekar",
+            required: false,
+            help: "Enter the last name."
+          }
+        ]
+      },
+      {
+        label: "Policy Statement",
+        id: "a2d3b4c5-d6e7-4890-9abc-1234567890ab",
+        serviceName: "IC_FDM",
+        params: [
+          {
+            key: "entityID",
+            label: "Entity ID",
+            type: "text",
+            placeholder: "customer@example.com",
+            required: true,
+            help: "Provide the customer identifier."
+          },
+          {
+            key: "entityNS",
+            label: "Entity NS",
+            type: "text",
+            placeholder: "email",
+            required: true,
+            help: "Provide the entity namespace."
+          }
+        ]
+      },
+      {
+        label: "Claims Summary",
+        id: "b7c8d9e0-f123-4567-89ab-0cdef1234567",
+        serviceName: "IC_FDM",
+        params: [
+          {
+            key: "entityID",
+            label: "Entity ID",
+            type: "text",
+            placeholder: "employee@example.com",
+            required: true,
+            help: "Employee email or identifier."
+          },
+          {
+            key: "entityNS",
+            label: "Entity NS",
+            type: "text",
+            placeholder: "email",
+            required: true,
+            help: "Namespace for the entity."
+          },
+          {
+            key: "policyNumber",
+            label: "Policy Number",
+            type: "text",
+            placeholder: "POL-10001",
+            required: false,
+            help: "Optional policy number."
+          }
+        ]
+      }
+    ];
+
+    const AEM_ASSOCIATE_UI_URL = "https://YOUR-PUBLISH-DOMAIN/libs/fd/associate/ui.html";
+
+    const els = {
+      documentId: document.getElementById("documentId"),
+      serviceName: document.getElementById("serviceName"),
+      serviceParamsFields: document.getElementById("serviceParamsFields"),
+      summaryDocument: document.getElementById("summaryDocument"),
+      summaryDocumentId: document.getElementById("summaryDocumentId"),
+      summaryService: document.getElementById("summaryService"),
+      summaryParams: document.getElementById("summaryParams"),
+      summaryParamsList: document.getElementById("summaryParamsList"),
+      statusText: document.getElementById("statusText"),
+      statusDetail: document.getElementById("statusDetail"),
+      launchBtn: document.getElementById("launchBtn"),
+      resetBtn: document.getElementById("resetBtn"),
+      openInNewTab: document.getElementById("openInNewTab"),
+      autoLaunch: document.getElementById("autoLaunch")
+    };
+
+    function setStatus(title, detail) {
+      els.statusText.textContent = title;
+      els.statusDetail.textContent = detail;
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#39;");
+    }
+
+    function populateDocumentSelect() {
+      els.documentId.innerHTML = '<option value="">Select a document</option>';
+      DOCUMENTS.forEach((doc, index) => {
+        const option = document.createElement("option");
+        option.value = String(index);
+        option.textContent = doc.label;
+        els.documentId.appendChild(option);
+      });
+    }
+
+    function populateServiceSelect(doc) {
+      els.serviceName.innerHTML = "";
+      const option = document.createElement("option");
+      option.value = doc.serviceName;
+      option.textContent = doc.serviceName;
+      els.serviceName.appendChild(option);
+      els.serviceName.value = doc.serviceName;
+    }
+
+    function buildParamInputs(doc) {
+      els.serviceParamsFields.innerHTML = "";
+
+      if (!doc) {
+        els.serviceParamsFields.innerHTML = `
+          <div class="info-box">
+            <div class="info-title">No document selected</div>
+            <div class="info-text">Choose a document to reveal the required fields.</div>
+          </div>
+        `;
+        els.summaryParams.textContent = "0 fields";
+        els.summaryParamsList.textContent = "";
+        return;
+      }
+
+      els.summaryParams.textContent = `${doc.params.length} field${doc.params.length === 1 ? "" : "s"}`;
+      els.summaryParamsList.textContent = doc.params.map(p => p.key).join(", ");
+
+      const container = document.createElement("div");
+
+      doc.params.forEach((param) => {
+        const wrap = document.createElement("div");
+        wrap.className = "param-group";
+
+        wrap.innerHTML = `
+          <div class="param-top">
+            <div>
+              <p class="param-name">
+                ${escapeHtml(param.label)}
+                ${param.required ? '<span class="required">*</span>' : ''}
+              </p>
+              <div class="param-key">${escapeHtml(param.key)}</div>
+            </div>
+          </div>
+          <div class="field" style="margin-bottom:0;">
+            <input
+              class="input"
+              id="param_${escapeHtml(param.key)}"
+              type="${escapeHtml(param.type || "text")}"
+              placeholder="${escapeHtml(param.placeholder || "")}"
+              ${param.required ? "required" : ""}
+            />
+            <div class="param-note">${escapeHtml(param.help || "")}</div>
+          </div>
+        `;
+
+        container.appendChild(wrap);
+      });
+
+      els.serviceParamsFields.appendChild(container);
+
+      doc.params.forEach((param) => {
+        const input = document.getElementById(`param_${param.key}`);
+        if (param.placeholder) input.value = "";
+        input.addEventListener("input", updateSummaryFromForm);
+      });
+    }
+
+    function getSelectedDocument() {
+      const idx = els.documentId.value;
+      if (idx === "") return null;
+      return DOCUMENTS[Number(idx)];
+    }
+
+    function updateSummaryFromForm() {
+      const doc = getSelectedDocument();
+
+      if (!doc) {
+        els.summaryDocument.textContent = "Not selected";
+        els.summaryDocumentId.textContent = "";
+        els.summaryService.textContent = els.serviceName.value || "IC_FDM";
+        els.summaryParams.textContent = "0 fields";
+        els.summaryParamsList.textContent = "";
+        return;
+      }
+
+      els.summaryDocument.textContent = doc.label;
+      els.summaryDocumentId.textContent = doc.id;
+      els.summaryService.textContent = els.serviceName.value || doc.serviceName;
+      els.summaryParams.textContent = `${doc.params.length} field${doc.params.length === 1 ? "" : "s"}`;
+      els.summaryParamsList.textContent = doc.params.map(p => p.key).join(", ");
+    }
+
+    function validateAndBuildPayload() {
+      const doc = getSelectedDocument();
+      if (!doc) {
+        throw new Error("Please select a document.");
+      }
+
+      const serviceName = els.serviceName.value.trim();
+      if (!serviceName) {
+        throw new Error("Please select a service.");
+      }
+
+      const serviceParams = {};
+      for (const param of doc.params) {
+        const input = document.getElementById(`param_${param.key}`);
+        const value = input.value.trim();
+
+        if (param.required && !value) {
+          input.focus();
+          throw new Error(`${param.label} is required.`);
+        }
+
+        if (value) {
+          serviceParams[param.key] = value;
+        }
+      }
+
+      return {
+        id: doc.id,
+        prefill: {
+          serviceName,
+          serviceParams
+        },
+        options: {
+          openInNewTab: els.openInNewTab.value === "true",
+          autoLaunch: els.autoLaunch.value === "true"
+        }
+      };
+    }
+
+    function launchAssociateUI() {
+      try {
+        const payload = validateAndBuildPayload();
+
+        setStatus("Launching...", "Opening the Associate UI window.");
+
+        const target = els.openInNewTab.value === "true" ? "_blank" : "_self";
+        const win = window.open(AEM_ASSOCIATE_UI_URL, target);
+
+        if (!win) {
+          setStatus("Blocked", "Popup blocked by the browser. Allow pop-ups and try again.");
+          alert("Popup blocked. Please allow pop-ups for this site.");
+          return;
+        }
+
+        const onMessage = (event) => {
+          if (event?.data?.type === "READY") {
+            win.postMessage(
+              { type: "INIT", source: "PORTAL", data: payload },
+              "*"
+            );
+            window.removeEventListener("message", onMessage);
+            setStatus("Sent", "The payload was sent to the Associate UI.");
+          }
+        };
+
+        window.addEventListener("message", onMessage);
+
+        setTimeout(() => {
+          try {
+            win.postMessage(
+              { type: "INIT", source: "PORTAL", data: payload },
+              "*"
+            );
+            setStatus("Sent", "The payload was sent to the Associate UI.");
+            window.removeEventListener("message", onMessage);
+          } catch (e) {
+            // ignore
+          }
+        }, 1200);
+      } catch (err) {
+        setStatus("Validation error", err.message);
+        alert(err.message);
+      }
+    }
+
+    function resetForm() {
+      els.documentId.value = "";
+      els.serviceName.innerHTML = "";
+      els.serviceParamsFields.innerHTML = "";
+      updateSummaryFromForm();
+      setStatus("Ready", "Fill in the fields and launch the Associate UI.");
+      populateDocumentSelect();
+      buildParamInputs(null);
+    }
+
+    els.documentId.addEventListener("change", () => {
+      const doc = getSelectedDocument();
+      if (!doc) {
+        els.serviceName.innerHTML = "";
+        buildParamInputs(null);
+        updateSummaryFromForm();
+        return;
+      }
+
+      populateServiceSelect(doc);
+      buildParamInputs(doc);
+      updateSummaryFromForm();
+
+      if (els.autoLaunch.value === "true") {
+        launchAssociateUI();
+      }
+    });
+
+    els.serviceName.addEventListener("change", updateSummaryFromForm);
+    els.launchBtn.addEventListener("click", launchAssociateUI);
+    els.resetBtn.addEventListener("click", resetForm);
+    els.autoLaunch.addEventListener("change", () => {
+      setStatus("Ready", "Fill in the fields and launch the Associate UI.");
+    });
+
+    populateDocumentSelect();
+    buildParamInputs(null);
+    updateSummaryFromForm();
+  </script>
+</body>
+</html>
