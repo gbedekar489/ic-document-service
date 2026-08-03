@@ -6,13 +6,14 @@ const FormData = require("form-data");
 const jsonServer = require("json-server");
 const sgMail = require("@sendgrid/mail");
 const draftsRouter = require("./routes/drafts");
-app.use(draftsRouter);
 
 const app = express();
 const router = jsonServer.router("db.json");
 const middlewares = jsonServer.defaults();
+
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
+app.use(draftsRouter);
 async function getDraftForms() {
     const client = new Client({
         host: process.env.AEP_QUERY_HOST,
