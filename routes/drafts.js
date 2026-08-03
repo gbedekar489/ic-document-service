@@ -88,7 +88,18 @@ router.get("/drafts", async (req, res) => {
                 <td>\${d.formname || ""}</td>
                 <td>\${d.email || ""}</td>
                 <td>\${d.ownerid || ""}</td>
-                <td>\${d.savedat || ""}</td>
+                <td>${
+  d.savedat
+    ? new Date(d.savedat).toLocaleString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true
+      })
+    : ""
+}</td>
               </tr>
             \`;
           });
