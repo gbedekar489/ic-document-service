@@ -72,6 +72,158 @@ app.use((req, res, next) => {
 
 // Serve static files first
 app.use(express.static(path.join(__dirname)));
+app.get("/drafts", async (req, res) => {
+
+    res.send(`
+<!DOCTYPE html>
+<html>
+<head>
+
+<title>Forms Saved As Draft</title>
+
+<link rel="stylesheet"
+href="https://unpkg.com/@spectrum-css/spectrum@3.1.0/dist/spectrum-core.css">
+
+<style>
+
+body{
+    font-family:Arial;
+    margin:40px;
+    background:#f5f5f5;
+}
+
+.container{
+    background:white;
+    padding:30px;
+    border-radius:8px;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:20px;
+}
+
+th{
+    text-align:left;
+    background:#1473e6;
+    color:white;
+    padding:12px;
+}
+
+td{
+    padding:10px;
+    border-bottom:1px solid #ddd;
+}
+
+input{
+    width:300px;
+    padding:10px;
+    font-size:15px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h2>Forms Saved As Draft</h2>
+
+<input
+type="text"
+id="search"
+placeholder="Search by email or form name">
+
+<table id="draftTable">
+
+<thead>
+
+<tr>
+<th>Form Name</th>
+<th>Email</th>
+<th>Owner</th>
+<th>Saved At</th>
+</tr>
+
+</thead>
+
+<tbody>
+
+</tbody>
+
+</table>
+
+</div>
+
+<script>
+
+async function loadDrafts(){
+
+    const response = await fetch('/api/drafts');
+
+    const drafts = await response.json();
+
+    const tbody = document.querySelector("#draftTable tbody");
+
+    tbody.innerHTML="";
+
+    drafts.forEach(d=>{
+
+        tbody.innerHTML += \`
+        <tr>
+            <td>\${d.formname}</td>
+            <td>\${d.email}</td>
+            <td>\${d.ownerid}</td>
+            <td>\${d.savedat}</td>
+        </tr>
+        \`;
+
+    });
+
+}
+
+document.getElementById("search")
+.addEventListener("keyup",function(){
+
+    const value=this.value.toLowerCase();
+
+    document
+    .querySelectorAll("#draftTable tbody tr")
+    .forEach(row=>{
+
+        row.style.display=
+        row.innerText.toLowerCase().includes(value)
+        ? ""
+        : "none";
+
+    });
+
+});
+
+loadDrafts();
+
+</script>
+
+</body>
+
+</html>
+`);
+});
+
+app.get("/api/drafts", async (req, res) => {
+    try {
+        const drafts = await getDraftForms();
+        res.json(drafts);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({
+            error: err.message
+        });
+    }
+});
 // Homepage
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "index.html"));
