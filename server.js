@@ -1,15 +1,52 @@
+const { Client } = require("pg");
 const express = require("express");
 const path = require("path");
 const axios = require("axios");
 const FormData = require("form-data");
 const jsonServer = require("json-server");
 const sgMail = require("@sendgrid/mail");
+const draftsRouter = require("./routes/drafts");
+app.use(draftsRouter);
 
 const app = express();
 const router = jsonServer.router("db.json");
 const middlewares = jsonServer.defaults();
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
+async function getDraftForms() {
+    const client = new Client({
+        host: process.env.AEP_QUERY_HOST,
+        port: Number(process.env.AEP_QUERY_PORT),
+        database: process.env.AEP_QUERY_DATABASE,
+        user: process.env.AEP_QUERY_USER,
+        password: process.env.AEP_QUERY_PASSWORD,
+        ssl: {
+            rejectUnauthorized: false
+        }
+    });
+
+    await client.connect();
+
+    const result = await client.query(`
+        SELECT
+            _techmarketingdemos.formname,
+            _techmarketingdemos.email,
+            _techmarketingdemos.ownerid,
+            _techmarketingdemos.savedat
+        FROM
+            formsportalstatus_v2_20260731_172643_669
+        WHERE
+            _techmarketingdemos.submitted = FALSE
+            AND _techmarketingdemos.savedat IS NOT NULL
+        ORDER BY
+            _techmarketingdemos.savedat DESC
+    `);
+
+    await client.end();
+
+    return result.rows;
+}
+
 const allowedOrigins = [
   "https://publish-p133654-e1305513.adobeaemcloud.com",
   "https://author-p133654-e1305513.adobeaemcloud.com"
@@ -35,8 +72,6 @@ app.use((req, res, next) => {
 
 // Serve static files first
 app.use(express.static(path.join(__dirname)));
-
-
 // Homepage
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "index.html"));
