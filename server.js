@@ -145,7 +145,6 @@ placeholder="Search by email or form name">
 <tr>
 <th>Form Name</th>
 <th>Email</th>
-<th>Owner</th>
 <th>Saved At</th>
 </tr>
 
@@ -177,7 +176,6 @@ async function loadDrafts(){
         <tr>
             <td>\${d.formname}</td>
             <td>\${d.email}</td>
-            <td>\${d.ownerid}</td>
             <td>\${d.savedat}</td>
         </tr>
         \`;
