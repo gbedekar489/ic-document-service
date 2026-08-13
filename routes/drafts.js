@@ -83,7 +83,7 @@ router.get("/drafts", async (req, res) => {
           const tbody = document.querySelector("#draftTable tbody");
           tbody.innerHTML = "";
 
-          drafts.forEach(d,index) => {
+          drafts.forEach(d => {
             tbody.innerHTML += \`
               <tr>
                 <td>\${d.formname || ""}</td>
@@ -99,10 +99,13 @@ router.get("/drafts", async (req, res) => {
 }) : ""}</td>
   <td>
         <button
-          onclick="sendReminder(\${index})">
+          class="reminder-button"
+          data-owner="\${d.ownerid || ""}"
+          data-form="\${d.formname || ""}">
           Send Reminder
         </button>
       </td>
+ 
               </tr>
             \`;
           });
