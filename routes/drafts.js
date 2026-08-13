@@ -68,8 +68,8 @@ router.get("/drafts", async (req, res) => {
             <tr>
               <th>Form Name</th>
               <th>Email</th>
-              
               <th>Saved At</th>
+              <th>Action</th>
             </tr>
           </thead>
           <tbody></tbody>
@@ -83,7 +83,7 @@ router.get("/drafts", async (req, res) => {
           const tbody = document.querySelector("#draftTable tbody");
           tbody.innerHTML = "";
 
-          drafts.forEach(d => {
+          drafts.forEach(d,index) => {
             tbody.innerHTML += \`
               <tr>
                 <td>\${d.formname || ""}</td>
@@ -97,6 +97,12 @@ router.get("/drafts", async (req, res) => {
   minute: "2-digit",
   hour12: true
 }) : ""}</td>
+  <td>
+        <button
+          onclick="sendReminder(${index})">
+          Send Reminder
+        </button>
+      </td>
               </tr>
             \`;
           });
