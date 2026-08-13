@@ -42,6 +42,99 @@ router.get("/api/drafts", async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+router.post("/api/drafts/send-nudge", async (req, res) => {
+  try {
+    const { ownerId, formId } = req.body;
+
+    if (!ownerId || !formId) {
+      return res.status(400).json({
+        error: "ownerId and formId are required"
+      });
+    }
+
+    const dataStreamId = process.env.AEP_DATASTREAM_ID;
+    const orgId = process.env.AEP_ORG_ID;
+    const apiKey = process.env.AEP_API_KEY;
+    const token = process.env.AEP_IMS_TOKEN;
+
+    if (!dataStreamId || !orgId || !apiKey || !token) {
+      return res.status(500).json({
+        error: "Missing AEP configuration"
+      });
+    }
+
+    const payload = {
+      event: {
+        xdm: {
+          eventType: "form.nudge",
+          timestamp: new Date().toISOString(),
+
+          identityMap: {
+            Auth0Owner: [
+              {
+                id: ownerId,
+                authenticatedState: "ambiguous",
+                primary: true
+              }
+            ]
+          },
+
+          _techmarketingdemos: {
+            formId: formId
+          }
+        }
+      }
+    };
+
+    console.log(
+      "Sending form.nudge event:",
+      JSON.stringify(payload, null, 2)
+    );
+
+    const url =
+      `https://server.adobedc.net/ee/v2/interact` +
+      `?dataStreamId=${encodeURIComponent(dataStreamId)}`;
+
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "x-api-key": apiKey,
+        "x-gw-ims-org-id": orgId,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(payload)
+    });
+
+    const responseText = await response.text();
+
+    console.log(`AEP status: ${response.status}`);
+    console.log(`AEP response: ${responseText}`);
+
+    if (!response.ok) {
+      return res.status(502).json({
+        error: "AEP form.nudge event failed",
+        status: response.status,
+        details: responseText
+      });
+    }
+
+    return res.json({
+      success: true,
+      message: "form.nudge event sent successfully",
+      ownerId,
+      formId,
+      aepResponse: responseText
+    });
+
+  } catch (err) {
+    console.error("form.nudge error:", err);
+
+    return res.status(500).json({
+      error: err.message
+    });
+  }
+});
 
 router.get("/drafts", async (req, res) => {
   res.send(`
