@@ -99,7 +99,7 @@ router.get("/drafts", async (req, res) => {
 }) : ""}</td>
   <td>
         <button
-          onclick="sendReminder(${index})">
+          onclick="sendReminder(\${index})">
           Send Reminder
         </button>
       </td>
