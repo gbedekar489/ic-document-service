@@ -21,10 +21,11 @@ async function getDraftForms() {
       _techmarketingdemos.email,
       _techmarketingdemos.ownerid,
       _techmarketingdemos.savedat
-    FROM formsportalstatus_v2_20260731_172643_669
+    FROM formsportalstatus_v2_20260731_172643_669 
     WHERE
       _techmarketingdemos.submitted = FALSE
       AND _techmarketingdemos.savedat IS NOT NULL
+      AND _techmarketingdemos.email IS NOT NULL
     ORDER BY _techmarketingdemos.savedat DESC
   `);
 
