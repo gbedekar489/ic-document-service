@@ -110,7 +110,40 @@ router.get("/drafts", async (req, res) => {
             \`;
           });
         }
+document.querySelectorAll(".reminder-button").forEach(button => {
+  button.addEventListener("click", async function () {
 
+    const ownerId = this.dataset.owner;
+    const formId = this.dataset.form;
+
+    console.log("Sending reminder:", ownerId, formId);
+
+    try {
+      const response = await fetch("/api/drafts/send-reminder", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          ownerId,
+          formId
+        })
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || "Failed to send reminder");
+      }
+
+      alert("Reminder journey triggered successfully.");
+
+    } catch (err) {
+      console.error("Reminder error:", err);
+      alert("Failed to trigger reminder: " + err.message);
+    }
+  });
+});
         document.getElementById("search").addEventListener("keyup", function () {
           const value = this.value.toLowerCase();
           document.querySelectorAll("#draftTable tbody tr").forEach(row => {
