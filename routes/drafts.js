@@ -190,15 +190,12 @@ router.get("/drafts", async (req, res) => {
   minute: "2-digit",
   hour12: true
 }) : ""}</td>
-  <td>
+   <td>
         <button
-          class="reminder-button"
-          data-owner="\${d.ownerid || ""}"
-          data-form="\${d.formname || ""}">
+          onclick="console.log('SEND REMINDER CLICKED', '\${d.ownerid}', '\${d.formname}')">
           Send Reminder
         </button>
       </td>
- 
               </tr>
             \`;
           });
@@ -247,7 +244,7 @@ document.querySelectorAll(".reminder-button").forEach(button => {
             row.style.display = row.innerText.toLowerCase().includes(value) ? "" : "none";
           });
         });
-
+console.log("Drafts page JavaScript loaded");
         loadDrafts();
       </script>
     </body>
