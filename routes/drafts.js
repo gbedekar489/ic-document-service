@@ -171,82 +171,76 @@ router.get("/drafts", async (req, res) => {
 
       <script>
         async function loadDrafts() {
-          const response = await fetch('/api/drafts');
-          const drafts = await response.json();
-          const tbody = document.querySelector("#draftTable tbody");
-          tbody.innerHTML = "";
+  const response = await fetch("/api/drafts");
+  const drafts = await response.json();
 
-          drafts.forEach(d => {
-            tbody.innerHTML += \`
-              <tr>
-                <td>\${d.formname || ""}</td>
-                <td>\${d.email || ""}</td>
-                
-                <td>\${d.savedat ? new Date(d.savedat).toLocaleString("en-US", {
-  year: "numeric",
-  month: "short",
-  day: "numeric",
-  hour: "numeric",
-  minute: "2-digit",
-  hour12: true
-}) : ""}</td>
-   <td>
-  <button
-    class="reminder-button"
-    data-owner="\${d.ownerid || ""}"
-    data-form="\${d.formname || ""}">
-    Send Reminder
-  </button>
-</td>           </tr>
-            \`;
-          });
-        }
-document.querySelectorAll(".reminder-button").forEach(button => {
-  button.addEventListener("click", async function () {
+  const tbody = document.querySelector("#draftTable tbody");
+  tbody.innerHTML = "";
 
-    const ownerId = this.dataset.owner;
-    const formId = this.dataset.form;
-    console.log("Send Reminder button clicked");
-  console.log("ownerId:", ownerId);
-  console.log("formId:", formId);
-
-    console.log("Sending reminder:", ownerId, formId);
-
-
-    try {
-      const response = await fetch("/api/drafts/send-nudge", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          ownerId,
-          formId
-        })
-      });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        throw new Error(result.error || "Failed to send reminder");
-      }
-
-      alert("Reminder journey triggered successfully.");
-
-    } catch (err) {
-      console.error("Reminder error:", err);
-      alert("Failed to trigger reminder: " + err.message);
-    }
+  drafts.forEach(d => {
+    tbody.innerHTML += \`
+      <tr>
+        <td>\${d.formname || ""}</td>
+        <td>\${d.email || ""}</td>
+        <td>\${d.savedat || ""}</td>
+        <td>
+          <button
+            class="reminder-button"
+            data-owner="\${d.ownerid || ""}"
+            data-form="\${d.formname || ""}">
+            Send Reminder
+          </button>
+        </td>
+      </tr>
+    \`;
   });
-});
-        document.getElementById("search").addEventListener("keyup", function () {
-          const value = this.value.toLowerCase();
-          document.querySelectorAll("#draftTable tbody tr").forEach(row => {
-            row.style.display = row.innerText.toLowerCase().includes(value) ? "" : "none";
-          });
+
+  // Attach listeners AFTER the buttons exist
+  document.querySelectorAll(".reminder-button").forEach(button => {
+    button.addEventListener("click", async function () {
+
+      const ownerId = this.dataset.owner;
+      const formId = this.dataset.form;
+
+      console.log("Send Reminder button clicked");
+      console.log("ownerId:", ownerId);
+      console.log("formId:", formId);
+
+      try {
+        console.log("Calling /api/drafts/send-nudge...");
+
+        const response = await fetch("/api/drafts/send-nudge", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            ownerId,
+            formId
+          })
         });
-console.log("Drafts page JavaScript loaded");
-        loadDrafts();
+
+        console.log("Backend response status:", response.status);
+
+        const result = await response.json();
+
+        console.log("Backend response:", result);
+
+        if (!response.ok) {
+          throw new Error(result.error || "Failed to send nudge");
+        }
+
+        alert("Nudge event sent successfully.");
+
+      } catch (err) {
+        console.error("Nudge failed:", err);
+        alert("Failed to trigger nudge: " + err.message);
+      }
+    });
+  });
+}
+
+loadDrafts();
       </script>
     </body>
     </html>
