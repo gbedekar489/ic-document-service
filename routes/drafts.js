@@ -208,8 +208,12 @@ document.querySelectorAll(".reminder-button").forEach(button => {
 
     const ownerId = this.dataset.owner;
     const formId = this.dataset.form;
+    console.log("Send Reminder button clicked");
+  console.log("ownerId:", ownerId);
+  console.log("formId:", formId);
 
     console.log("Sending reminder:", ownerId, formId);
+
 
     try {
       const response = await fetch("/api/drafts/send-nudge", {
