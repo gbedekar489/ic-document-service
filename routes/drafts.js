@@ -212,7 +212,7 @@ document.querySelectorAll(".reminder-button").forEach(button => {
     console.log("Sending reminder:", ownerId, formId);
 
     try {
-      const response = await fetch("/api/drafts/send-reminder", {
+      const response = await fetch("/api/drafts/send-nudge", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
