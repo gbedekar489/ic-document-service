@@ -230,8 +230,7 @@ router.get("/drafts", async (req, res) => {
           throw new Error(result.error || "Failed to send nudge");
         }
 
-        alert("Nudge event sent successfully.");
-
+        alert("Reminder email sent");
       } catch (err) {
         console.error("Nudge failed:", err);
         alert("Failed to trigger nudge: " + err.message);
