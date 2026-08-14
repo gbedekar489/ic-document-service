@@ -191,12 +191,13 @@ router.get("/drafts", async (req, res) => {
   hour12: true
 }) : ""}</td>
    <td>
-        <button
-          onclick="console.log('SEND REMINDER CLICKED', '\${d.ownerid}', '\${d.formname}')">
-          Send Reminder
-        </button>
-      </td>
-              </tr>
+  <button
+    class="reminder-button"
+    data-owner="\${d.ownerid || ""}"
+    data-form="\${d.formname || ""}">
+    Send Reminder
+  </button>
+</td>           </tr>
             \`;
           });
         }
