@@ -182,7 +182,7 @@ router.get("/drafts", async (req, res) => {
       <tr>
         <td>\${d.formname || ""}</td>
         <td>\${d.email || ""}</td>
-        <td>\${d.savedat || ""}</td>
+         <td>\${formatSavedAt(d.savedat)}</td>
         <td>
           <button
             class="reminder-button"
@@ -238,8 +238,21 @@ router.get("/drafts", async (req, res) => {
     });
   });
 }
+function formatSavedAt(value) {
+  if (!value) return "";
 
+  const date = new Date(value);
+
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit"
+  }).format(date);
+}
 loadDrafts();
+
       </script>
     </body>
     </html>
