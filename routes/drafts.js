@@ -150,6 +150,38 @@ router.get("/drafts", async (req, res) => {
         th{text-align:left;background:#1473e6;color:white;padding:12px;}
         td{padding:10px;border-bottom:1px solid #ddd;}
         input{width:300px;padding:10px;font-size:15px;}
+        .reminder-button {
+  background-color: #1473e6;
+  color: #ffffff;
+  border: none;
+  border-radius: 4px;
+  padding: 9px 18px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  min-width: 130px;
+  transition: background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.reminder-button:hover {
+  background-color: #0d66d0;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
+}
+
+.reminder-button:active {
+  background-color: #095aba;
+}
+
+.reminder-button:focus {
+  outline: 2px solid #2680eb;
+  outline-offset: 2px;
+}
+
+.reminder-button:disabled {
+  background-color: #b3b3b3;
+  cursor: not-allowed;
+  box-shadow: none;
+}
       </style>
     </head>
     <body>
