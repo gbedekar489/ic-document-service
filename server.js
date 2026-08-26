@@ -14,6 +14,107 @@ const middlewares = jsonServer.defaults();
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
 app.use(draftsRouter);
+
+// --------------------------------------------------
+// Auth0 Management API token
+// --------------------------------------------------
+async function getAuth0ManagementToken() {
+  try {
+    const response = await axios.post(
+      `https://${process.env.AUTH0_DOMAIN}/oauth/token`,
+      {
+        client_id: process.env.AUTH0_CLIENT_ID,
+        client_secret: process.env.AUTH0_CLIENT_SECRET,
+        audience: `https://${process.env.AUTH0_DOMAIN}/api/v2/`,
+        grant_type: "client_credentials"
+      },
+      {
+        headers: {
+          "Content-Type": "application/json"
+        }
+      }
+    );
+
+    return response.data.access_token;
+  } catch (error) {
+    console.error(
+      "Auth0 token error:",
+      error.response?.data || error.message
+    );
+
+    throw new Error("Unable to obtain Auth0 Management API token");
+  }
+}
+
+
+// --------------------------------------------------
+// Create Auth0 user
+// --------------------------------------------------
+app.post("/api/users", async (req, res) => {
+  try {
+    const {
+      email,
+      password,
+      firstName,
+      lastName
+    } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        error: "email and password are required"
+      });
+    }
+
+    const accessToken = await getAuth0ManagementToken();
+
+    const response = await axios.post(
+      `https://${process.env.AUTH0_DOMAIN}/api/v2/users`,
+      {
+        connection: process.env.AUTH0_CONNECTION,
+        email,
+        password,
+        given_name: firstName,
+        family_name: lastName,
+        email_verified: false
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json"
+        }
+      }
+    );
+
+    const auth0User = response.data;
+
+    console.log("Auth0 user created:", auth0User.user_id);
+
+    return res.status(201).json({
+      success: true,
+      user: {
+        userId: auth0User.user_id,
+        email: auth0User.email,
+        firstName: auth0User.given_name,
+        lastName: auth0User.family_name
+      }
+    });
+
+  } catch (error) {
+    console.error(
+      "Auth0 user creation failed:",
+      error.response?.data || error.message
+    );
+
+    return res.status(error.response?.status || 500).json({
+      success: false,
+      error:
+        error.response?.data?.message ||
+        error.response?.data?.error_description ||
+        "Unable to create Auth0 user"
+    });
+  }
+});
 async function getDraftForms() {
     const client = new Client({
         host: process.env.AEP_QUERY_HOST,
