@@ -129,24 +129,12 @@ app.post("/api/users", async (req, res) => {
     // =================================================
 
     const aepPayload = {
-
-      _techmarketingdemos: {
-
-        // Auth0-generated user_id becomes
-        // the AEP primary identity
-
-        crmid: auth0UserId,
-
-        Email:
-          auth0User.email || email,
-
-        FirstName:
-          auth0User.given_name || firstName || "",
-
-        LastName:
-          auth0User.family_name || lastName || ""
-      }
-    };
+  crmid: auth0User.user_id,
+  Email: auth0User.email || email,
+  FirstName: auth0User.given_name || firstName || "",
+  LastName: auth0User.family_name || lastName || ""
+};
+    
 
 
     console.log(
