@@ -66,13 +66,33 @@ app.post("/api/users", upload.none(),async (req, res) => {
     console.log("======================================");
 
 
-    const {
-      email,
-      password,
-      firstName,
-      lastName
-    } = req.body;
+    // AEM Adaptive Forms sends the form JSON inside "jcr:data"
+let userData;
 
+try {
+  userData = JSON.parse(req.body["jcr:data"]);
+} catch (error) {
+  console.error("Unable to parse AEM jcr:data:", error);
+
+  return res.status(400).json({
+    success: false,
+    error: "Invalid form data received from AEM"
+  });
+}
+
+const {
+  email,
+  password,
+  firstName,
+  lastName
+} = userData;
+
+console.log("Parsed AEM user:", {
+  email,
+  firstName,
+  lastName
+  // deliberately don't log password
+});
 
     // ------------------------------------------------
     // Validate request
