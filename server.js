@@ -1,5 +1,8 @@
 const { Client } = require("pg");
 const express = require("express");
+const multer = require("multer");
+
+const upload = multer();
 const path = require("path");
 const axios = require("axios");
 const FormData = require("form-data");
@@ -53,7 +56,7 @@ async function getAuth0ManagementToken() {
 // --------------------------------------------------
 // Create Auth0 User + AEP Profile
 // --------------------------------------------------
-app.post("/api/users", async (req, res) => {
+app.post("/api/users", upload.none(),async (req, res) => {
   try {
      console.log("======================================");
     console.log("POST /api/users");

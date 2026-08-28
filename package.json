@@ -1,4 +1,4 @@
-    {
+{
     "name": "mock-orders-api",
     "version": "1.0.0",
     "private": true,
@@ -11,6 +11,7 @@
         "express": "^4.22.1",
         "form-data": "^4.0.0",
         "json-server": "^0.17.4",
+        "multer": "^2.2.0",
         "pg": "^8.22.0"
     }
 }
