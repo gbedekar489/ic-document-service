@@ -55,6 +55,13 @@ async function getAuth0ManagementToken() {
 // --------------------------------------------------
 app.post("/api/users", async (req, res) => {
   try {
+     console.log("======================================");
+    console.log("POST /api/users");
+    console.log("Content-Type:", req.headers["content-type"]);
+    console.log("Request body:");
+    console.log(JSON.stringify(req.body, null, 2));
+    console.log("======================================");
+
 
     const {
       email,
