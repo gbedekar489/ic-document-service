@@ -53,19 +53,18 @@ async function getAuth0ManagementToken() {
 }
 app.post("/api/aep/entra-debug", (req, res) => {
   console.log("======================================");
-  console.log("ENTRA CUSTOM EXTENSION REQUEST");
-  console.log("Content-Type:", req.headers["content-type"]);
-  console.log("Body:");
+  console.log("ENTRA ATTRIBUTE COLLECTION SUBMIT");
   console.log(JSON.stringify(req.body, null, 2));
   console.log("======================================");
 
   return res.status(200).json({
     data: {
-      "@odata.type": "microsoft.graph.onTokenIssuanceStartResponseData",
-      "actions": [
+      "@odata.type":
+        "microsoft.graph.onAttributeCollectionSubmitResponseData",
+      actions: [
         {
-          "@odata.type": "microsoft.graph.tokenIssuanceStartResponseData",
-          "action": "continueWithDefaultBehavior"
+          "@odata.type":
+            "microsoft.graph.attributeCollectionSubmit.continueWithDefaultBehavior"
         }
       ]
     }
