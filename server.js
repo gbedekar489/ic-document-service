@@ -52,7 +52,85 @@ async function getAuth0ManagementToken() {
   }
 }
 
+app.post("/api/aep/entra-user", async (req, res) => {
+  try {
+    const {
+      id,
+      email,
+      firstName,
+      lastName
+    } = req.body;
 
+    // Validate required values
+    if (!id) {
+      return res.status(400).json({
+        success: false,
+        error: "Entra user id is required"
+      });
+    }
+
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        error: "Email is required"
+      });
+    }
+
+    // Build payload expected by the existing AEP mapping
+    const aepPayload = {
+      crmid: id,
+      Email: email,
+      FirstName: firstName || "",
+      LastName: lastName || ""
+    };
+
+    console.log("Entra -> AEP profile:", aepPayload);
+
+    // Send to the existing AEP HTTP streaming dataflow
+    const aepResponse = await axios.post(
+      process.env.AEP_STREAMING_URL,
+      aepPayload,
+      {
+        headers: {
+          "Content-Type": "application/json",
+          "x-adobe-flow-id": process.env.AEP_DATAFLOW_ID
+        },
+        timeout: 15000
+      }
+    );
+
+    console.log("AEP response:", aepResponse.data);
+
+    return res.status(200).json({
+      success: true,
+
+      user: {
+        id,
+        email,
+        firstName,
+        lastName
+      },
+
+      aep: {
+        success: true,
+        inletId: aepResponse.data?.inletId || null,
+        xactionId: aepResponse.data?.xactionId || null,
+        receivedTimeMs: aepResponse.data?.receivedTimeMs || null
+      }
+    });
+
+  } catch (error) {
+    console.error(
+      "Entra -> AEP profile creation failed:",
+      error.response?.data || error.message
+    );
+
+    return res.status(error.response?.status || 500).json({
+      success: false,
+      error: error.response?.data || error.message
+    });
+  }
+});
 // --------------------------------------------------
 // Create Auth0 User + AEP Profile
 // --------------------------------------------------
