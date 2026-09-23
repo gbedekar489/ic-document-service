@@ -21,6 +21,50 @@ app.use(draftsRouter);
 // --------------------------------------------------
 // Get Auth0 Management API Token
 // --------------------------------------------------
+async function getGraphAccessToken() {
+  const tokenUrl =
+    `https://login.microsoftonline.com/${process.env.ENTRA_TENANT_ID}/oauth2/v2.0/token`;
+
+  const response = await axios.post(
+    tokenUrl,
+    new URLSearchParams({
+      client_id: process.env.ENTRA_CLIENT_ID,
+      client_secret: process.env.ENTRA_CLIENT_SECRET,
+      scope: "https://graph.microsoft.com/.default",
+      grant_type: "client_credentials"
+    }).toString(),
+    {
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded"
+      },
+      timeout: 10000
+    }
+  );
+
+  return response.data.access_token;
+}
+async function getEntraUserByIdentity(issuer, issuerAssignedId) {
+  const accessToken = await getGraphAccessToken();
+
+  const filter =
+    `identities/any(c:c/issuerAssignedId eq '${issuerAssignedId.replace(/'/g, "''")}' and c/issuer eq '${issuer.replace(/'/g, "''")}')`;
+
+  const response = await axios.get(
+    "https://graph.microsoft.com/v1.0/users",
+    {
+      params: {
+        "$select": "id,displayName,mail,givenName,surname,identities",
+        "$filter": filter
+      },
+      headers: {
+        Authorization: `Bearer ${accessToken}`
+      },
+      timeout: 10000
+    }
+  );
+
+  return response.data.value?.[0] || null;
+}
 async function getAuth0ManagementToken() {
   try {
     const response = await axios.post(
@@ -63,6 +107,8 @@ app.post("/api/aep/entra-debug", async (req, res) => {
       );
 
     if (!signInIdentity) {
+      console.error("No email identity found");
+
       return res.status(400).json({
         success: false,
         error: "No emailAddress identity found"
@@ -74,6 +120,29 @@ app.post("/api/aep/entra-debug", async (req, res) => {
 
     console.log("Entra issuer:", issuer);
     console.log("Entra issuerAssignedId:", issuerAssignedId);
+
+    const entraUser = await getEntraUserByIdentity(
+      issuer,
+      issuerAssignedId
+    );
+
+    if (!entraUser) {
+      console.error("Entra user not found in Microsoft Graph");
+
+      return res.status(404).json({
+        success: false,
+        error: "Entra user not found"
+      });
+    }
+
+    console.log("======================================");
+    console.log("ENTRA USER FOUND IN GRAPH");
+    console.log("Entra Object ID:", entraUser.id);
+    console.log("Display Name:", entraUser.displayName);
+    console.log("Email:", entraUser.mail);
+    console.log("First Name:", entraUser.givenName);
+    console.log("Last Name:", entraUser.surname);
+    console.log("======================================");
 
     return res.status(200).json({
       data: {
@@ -89,10 +158,14 @@ app.post("/api/aep/entra-debug", async (req, res) => {
     });
 
   } catch (error) {
-    console.error("AttributeCollectionSubmit error:", error);
+    console.error(
+      "Graph lookup failed:",
+      error.response?.data || error.message
+    );
+
     return res.status(500).json({
       success: false,
-      error: error.message
+      error: "Graph lookup failed"
     });
   }
 });
