@@ -95,6 +95,37 @@ async function getAuth0ManagementToken() {
     );
   }
 }
+
+app.post("/api/aep/entra-debug", (req, res) => {
+  console.log("======================================");
+  console.log("ENTRA ATTRIBUTE COLLECTION SUBMIT");
+  console.log(JSON.stringify(req.body, null, 2));
+
+  const identity =
+    req.body?.data?.userSignUpInfo?.identities?.find(
+      x => x.signInType === "emailAddress"
+    );
+
+  if (identity) {
+    console.log("Entra issuer:", identity.issuer);
+    console.log("Entra issuerAssignedId:", identity.issuerAssignedId);
+  }
+
+  console.log("======================================");
+
+  return res.status(200).json({
+    data: {
+      "@odata.type":
+        "microsoft.graph.onAttributeCollectionSubmitResponseData",
+      actions: [
+        {
+          "@odata.type":
+            "microsoft.graph.attributeCollectionSubmit.continueWithDefaultBehavior"
+        }
+      ]
+    }
+  });
+});
 app.post("/api/aep/entra-token-debug", (req, res) => {
   console.log("======================================");
   console.log("ENTRA TOKEN ISSUANCE START");
@@ -104,7 +135,7 @@ app.post("/api/aep/entra-token-debug", (req, res) => {
   return res.status(200).json({
     data: {
       "@odata.type":
-        "microsoft.graph.onTokenIssuanceStartResponseData",
+        "microsoft.graph.onsTokenIssuanceStartResponseData",
       actions: [
         {
           "@odata.type":
@@ -113,80 +144,6 @@ app.post("/api/aep/entra-token-debug", (req, res) => {
       ]
     }
   });
-});
-app.post("/api/aep/entra-debug", async (req, res) => {
-  try {
-    console.log("======================================");
-    console.log("ENTRA ATTRIBUTE COLLECTION SUBMIT");
-    console.log(JSON.stringify(req.body, null, 2));
-
-    const signInIdentity =
-      req.body?.data?.userSignUpInfo?.identities?.find(
-        identity => identity.signInType === "emailAddress"
-      );
-
-    if (!signInIdentity) {
-      console.error("No email identity found");
-
-      return res.status(400).json({
-        success: false,
-        error: "No emailAddress identity found"
-      });
-    }
-
-    const issuer = signInIdentity.issuer;
-    const issuerAssignedId = signInIdentity.issuerAssignedId;
-
-    console.log("Entra issuer:", issuer);
-    console.log("Entra issuerAssignedId:", issuerAssignedId);
-
-    const entraUser = await getEntraUserByIdentity(
-      issuer,
-      issuerAssignedId
-    );
-
-    if (!entraUser) {
-      console.error("Entra user not found in Microsoft Graph");
-
-      return res.status(404).json({
-        success: false,
-        error: "Entra user not found"
-      });
-    }
-
-    console.log("======================================");
-    console.log("ENTRA USER FOUND IN GRAPH");
-    console.log("Entra Object ID:", entraUser.id);
-    console.log("Display Name:", entraUser.displayName);
-    console.log("Email:", entraUser.mail);
-    console.log("First Name:", entraUser.givenName);
-    console.log("Last Name:", entraUser.surname);
-    console.log("======================================");
-
-    return res.status(200).json({
-      data: {
-        "@odata.type":
-          "microsoft.graph.onAttributeCollectionSubmitResponseData",
-        actions: [
-          {
-            "@odata.type":
-              "microsoft.graph.attributeCollectionSubmit.continueWithDefaultBehavior"
-          }
-        ]
-      }
-    });
-
-  } catch (error) {
-    console.error(
-      "Graph lookup failed:",
-      error.response?.data || error.message
-    );
-
-    return res.status(500).json({
-      success: false,
-      error: "Graph lookup failed"
-    });
-  }
 });
 app.post("/api/aep/entra-user", async (req, res) => {
   try {
