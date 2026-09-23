@@ -95,6 +95,25 @@ async function getAuth0ManagementToken() {
     );
   }
 }
+app.post("/api/aep/entra-token-debug", (req, res) => {
+  console.log("======================================");
+  console.log("ENTRA TOKEN ISSUANCE START");
+  console.log(JSON.stringify(req.body, null, 2));
+  console.log("======================================");
+
+  return res.status(200).json({
+    data: {
+      "@odata.type":
+        "microsoft.graph.onTokenIssuanceStartResponseData",
+      actions: [
+        {
+          "@odata.type":
+            "microsoft.graph.tokenIssuanceStart.continueWithDefaultBehavior"
+        }
+      ]
+    }
+  });
+});
 app.post("/api/aep/entra-debug", async (req, res) => {
   try {
     console.log("======================================");
