@@ -51,24 +51,50 @@ async function getAuth0ManagementToken() {
     );
   }
 }
-app.post("/api/aep/entra-debug", (req, res) => {
-  console.log("======================================");
-  console.log("ENTRA ATTRIBUTE COLLECTION SUBMIT");
-  console.log(JSON.stringify(req.body, null, 2));
-  console.log("======================================");
+app.post("/api/aep/entra-debug", async (req, res) => {
+  try {
+    console.log("======================================");
+    console.log("ENTRA ATTRIBUTE COLLECTION SUBMIT");
+    console.log(JSON.stringify(req.body, null, 2));
 
-  return res.status(200).json({
-    data: {
-      "@odata.type":
-        "microsoft.graph.onAttributeCollectionSubmitResponseData",
-      actions: [
-        {
-          "@odata.type":
-            "microsoft.graph.attributeCollectionSubmit.continueWithDefaultBehavior"
-        }
-      ]
+    const signInIdentity =
+      req.body?.data?.userSignUpInfo?.identities?.find(
+        identity => identity.signInType === "emailAddress"
+      );
+
+    if (!signInIdentity) {
+      return res.status(400).json({
+        success: false,
+        error: "No emailAddress identity found"
+      });
     }
-  });
+
+    const issuer = signInIdentity.issuer;
+    const issuerAssignedId = signInIdentity.issuerAssignedId;
+
+    console.log("Entra issuer:", issuer);
+    console.log("Entra issuerAssignedId:", issuerAssignedId);
+
+    return res.status(200).json({
+      data: {
+        "@odata.type":
+          "microsoft.graph.onAttributeCollectionSubmitResponseData",
+        actions: [
+          {
+            "@odata.type":
+              "microsoft.graph.attributeCollectionSubmit.continueWithDefaultBehavior"
+          }
+        ]
+      }
+    });
+
+  } catch (error) {
+    console.error("AttributeCollectionSubmit error:", error);
+    return res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
 });
 app.post("/api/aep/entra-user", async (req, res) => {
   try {
