@@ -39,6 +39,7 @@ async function loadAdaptiveForm() {
     button.textContent = "Submit";
 
     formElement.appendChild(button);
+    formElement.addEventListener("submit", submitAdaptiveForm);
 
     loading.style.display = "none";
 
@@ -184,8 +185,89 @@ function renderField(field, formElement) {
   );
 }
 
+async function submitAdaptiveForm(event) {
+  event.preventDefault();
+  event.stopPropagation();
 
+  const formElement = document.getElementById("adaptive-form");
+  const error = document.getElementById("error");
+  const submitButton =
+    formElement.querySelector(".submit-button");
+
+  try {
+    error.textContent = "";
+
+    submitButton.disabled = true;
+    submitButton.textContent = "Submitting...";
+
+    const formData = new FormData(formElement);
+
+    const data = Object.fromEntries(
+      formData.entries()
+    );
+
+    console.log("Submitting form data:", data);
+
+    const response = await fetch(
+      "/api/adaptive-form/submit",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(data)
+      }
+    );
+
+    const result = await response.json();
+
+    console.log("Submission result:", result);
+
+    if (!response.ok || !result.success) {
+      throw new Error(
+        result.error || "Form submission failed"
+      );
+    }
+
+    showThankYouMessage(
+      result.aemResponse?.thankYouMessage
+    );
+
+  } catch (err) {
+    console.error("SUBMIT ERROR:", err);
+
+    error.textContent =
+      `Unable to submit the form: ${err.message}`;
+
+    submitButton.disabled = false;
+    submitButton.textContent = "Submit";
+  }
+}
+function showThankYouMessage(message) {
+  const card = document.querySelector(".form-card");
+
+  const thankYouMessage =
+    message ||
+    "<p>Thank you for submitting the form.</p>";
+
+  card.innerHTML = `
+    <div class="success-message">
+
+      <div class="success-icon">
+        ✓
+      </div>
+
+      <h2>Registration submitted</h2>
+
+      <div class="thank-you-message">
+        ${thankYouMessage}
+      </div>
+
+    </div>
+  `;
+}
 document.addEventListener(
+  
   "DOMContentLoaded",
   loadAdaptiveForm
 );
