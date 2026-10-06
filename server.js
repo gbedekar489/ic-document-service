@@ -20,6 +20,11 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
 app.use(draftsRouter);
 app.use("/api/adaptive-form", adaptiveFormRouter);
+app.get("/registration", (req, res) => {
+  res.sendFile(
+    path.join(__dirname, "public", "registration.html")
+  );
+});
 // --------------------------------------------------
 // Get Auth0 Management API Token
 // --------------------------------------------------
