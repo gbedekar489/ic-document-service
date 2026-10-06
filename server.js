@@ -9,6 +9,8 @@ const FormData = require("form-data");
 const jsonServer = require("json-server");
 const sgMail = require("@sendgrid/mail");
 const draftsRouter = require("./routes/drafts");
+const adaptiveFormRouter =
+  require("./routes/adaptive-form");
 
 const app = express();
 const router = jsonServer.router("db.json");
@@ -17,7 +19,7 @@ const middlewares = jsonServer.defaults();
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
 app.use(draftsRouter);
-
+app.use("/api/adaptive-form", adaptiveFormRouter);
 // --------------------------------------------------
 // Get Auth0 Management API Token
 // --------------------------------------------------
