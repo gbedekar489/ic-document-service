@@ -124,3 +124,20 @@ body {
   }
 
 }
+.form-field select {
+  width: 100%;
+  height: 46px;
+  padding: 10px 12px;
+  border: 1px solid #d0d5dd;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #1f2937;
+  font-size: 16px;
+  outline: none;
+  cursor: pointer;
+}
+
+.form-field select:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
