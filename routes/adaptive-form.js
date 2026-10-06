@@ -76,7 +76,9 @@ router.post("/submit", async (req, res) => {
         "Accept": "application/json"
       },
 
-      body: JSON.stringify(req.body)
+      body: JSON.stringify({
+  data: req.body
+})
     });
 
     const responseText = await response.text();
