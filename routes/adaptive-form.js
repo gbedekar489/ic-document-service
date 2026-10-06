@@ -95,12 +95,22 @@ router.post("/submit", async (req, res) => {
       });
     }
 
-    return res.status(200).json({
-      success: true,
-      status: response.status,
-      message: "Form submitted successfully",
-      aemResponse: responseText
-    });
+    let aemResponse = {};
+
+try {
+  aemResponse = JSON.parse(responseText);
+} catch {
+  aemResponse = {
+    rawResponse: responseText
+  };
+}
+
+return res.status(200).json({
+  success: true,
+  status: response.status,
+  message: "Form submitted successfully",
+  aemResponse: aemResponse
+});
 
   } catch (error) {
 

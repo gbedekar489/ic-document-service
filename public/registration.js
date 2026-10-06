@@ -36,7 +36,7 @@ async function loadAdaptiveForm() {
 
     button.type = "submit";
     button.className = "submit-button";
-    button.textContent = "Continue";
+    button.textContent = "Submit";
 
     formElement.appendChild(button);
 
