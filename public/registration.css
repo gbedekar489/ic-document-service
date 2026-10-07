@@ -183,3 +183,208 @@ body {
   opacity: 0.6;
   cursor: not-allowed;
 }
+/* ---------------------------------------
+   Wizard progress
+--------------------------------------- */
+
+.wizard-progress {
+  display: flex;
+  justify-content: space-between;
+  margin: 8px 0 36px;
+  position: relative;
+}
+
+.progress-step {
+  flex: 1;
+  text-align: center;
+  position: relative;
+  color: #98a2b3;
+}
+
+.progress-step:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  top: 16px;
+  left: 60%;
+  width: 80%;
+  height: 2px;
+  background: #e4e7ec;
+  z-index: 0;
+}
+
+.progress-number {
+  width: 34px;
+  height: 34px;
+  margin: 0 auto 8px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 2px solid #d0d5dd;
+  border-radius: 50%;
+
+  background: #fff;
+
+  font-size: 14px;
+  font-weight: 600;
+
+  position: relative;
+  z-index: 1;
+}
+
+.progress-label {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.progress-step.active {
+  color: #2563eb;
+}
+
+.progress-step.active .progress-number {
+  border-color: #2563eb;
+  color: #2563eb;
+}
+
+.progress-step.completed {
+  color: #027a48;
+}
+
+.progress-step.completed .progress-number {
+  border-color: #027a48;
+  background: #ecfdf3;
+  color: #027a48;
+}
+
+
+/* ---------------------------------------
+   Wizard panels
+--------------------------------------- */
+
+.wizard-panel {
+  display: none;
+}
+
+.wizard-panel h2 {
+  margin: 0 0 28px;
+  font-size: 22px;
+  font-weight: 600;
+}
+
+
+/* ---------------------------------------
+   Navigation
+--------------------------------------- */
+
+.wizard-navigation {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+
+  margin-top: 32px;
+  padding-top: 24px;
+
+  border-top: 1px solid #eaecf0;
+}
+
+.wizard-button {
+  min-width: 120px;
+  height: 46px;
+
+  padding: 0 24px;
+
+  border-radius: 6px;
+
+  font-size: 15px;
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+.primary-button {
+  border: none;
+  background: #2563eb;
+  color: #fff;
+}
+
+.primary-button:hover {
+  background: #1d4ed8;
+}
+
+.primary-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.secondary-button {
+  border: 1px solid #d0d5dd;
+  background: #fff;
+  color: #344054;
+}
+
+.secondary-button:hover {
+  background: #f9fafb;
+}
+
+
+/* ---------------------------------------
+   Review
+--------------------------------------- */
+
+.review-group {
+  margin-bottom: 28px;
+}
+
+.review-group h3 {
+  margin: 0 0 12px;
+  padding-bottom: 8px;
+
+  border-bottom: 1px solid #eaecf0;
+
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.review-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+
+  padding: 10px 0;
+}
+
+.review-label {
+  color: #667085;
+}
+
+.review-value {
+  text-align: right;
+  color: #101828;
+}
+
+
+/* ---------------------------------------
+   Mobile
+--------------------------------------- */
+
+@media (max-width: 600px) {
+
+  .progress-label {
+    font-size: 11px;
+  }
+
+  .review-row {
+    display: block;
+  }
+
+  .review-value {
+    display: block;
+    text-align: left;
+    margin-top: 4px;
+  }
+
+  .wizard-button {
+    min-width: 100px;
+  }
+}
