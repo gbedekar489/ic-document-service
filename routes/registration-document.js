@@ -47,7 +47,7 @@ router.post("/", async (req, res) => {
   try {
     if (!fs.existsSync(XDP_PATH)) {
       return res.status(500).json({
-        error: "RegistrationForm.xdp was not found"
+        error: "RegistrationForm.pdf was not found"
       });
     }
 
@@ -76,8 +76,8 @@ router.post("/", async (req, res) => {
       "template",
       fs.createReadStream(XDP_PATH),
       {
-        filename: "RegistrationForm.xdp",
-        contentType: "application/vnd.adobe.xdp+xml"
+        filename: "RegistrationForm.pdf",
+        contentType: "application/pdf"
       }
     );
 
