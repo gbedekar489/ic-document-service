@@ -1,24 +1,19 @@
 const express = require("express");
 const fs = require("fs");
 const path = require("path");
+const FormData = require("form-data");
 
 const router = express.Router();
 
 const AEM_BASE_URL =
   "https://author-p133654-e1305513.adobeaemcloud.com";
 
-const XDP_PATH =
-  path.join(
-    __dirname,
-    "..",
-    "templates",
-    "RegistrationForm.pdf"
-  );
-
-
-// --------------------------------------------------
-// Helpers
-// --------------------------------------------------
+const XDP_PATH = path.join(
+  __dirname,
+  "..",
+  "templates",
+  "RegistrationForm.pdf"
+);
 
 function escapeXml(value) {
   return String(value ?? "")
@@ -29,7 +24,6 @@ function escapeXml(value) {
     .replace(/'/g, "&apos;");
 }
 
-
 function createRegistrationXml(requestBody) {
   const data =
     requestBody?.registrationapplication ||
@@ -38,20 +32,16 @@ function createRegistrationXml(requestBody) {
 
   return `<?xml version="1.0" encoding="UTF-8"?>
 <form1>
-    <registrationform>
-        <fname>${escapeXml(data.fname)}</fname>
-        <lname>${escapeXml(data.lname)}</lname>
-        <email>${escapeXml(data.email)}</email>
-        <mobileNumber>${escapeXml(data.mobileNumber)}</mobileNumber>
-        <registrationStartDate>${escapeXml(data.registrationStartDate)}</registrationStartDate>
-        <employment>${escapeXml(data.employment)}</employment>
-    </registrationform>
+  <registrationform>
+    <fname>${escapeXml(data.fname)}</fname>
+    <lname>${escapeXml(data.lname)}</lname>
+    <email>${escapeXml(data.email)}</email>
+    <mobileNumber>${escapeXml(data.mobileNumber)}</mobileNumber>
+    <registrationStartDate>${escapeXml(data.registrationStartDate)}</registrationStartDate>
+    <employment>${escapeXml(data.employment)}</employment>
+  </registrationform>
 </form1>`;
 }
-
-// --------------------------------------------------
-// Generate PDF
-// --------------------------------------------------
 
 router.post("/", async (req, res) => {
   try {
@@ -61,47 +51,44 @@ router.post("/", async (req, res) => {
       });
     }
 
-    //const data = req.body;
+    const data =
+      req.body?.registrationapplication ||
+      req.body ||
+      {};
 
-    console.log("Generating registration PDF");
+    console.log("PDF request fields:", {
+      fname: data.fname,
+      lname: data.lname,
+      email: data.email,
+      mobileNumber: data.mobileNumber,
+      registrationStartDate: data.registrationStartDate,
+      employment: data.employment
+    });
 
-    //const xml = createRegistrationXml(data);
     const xml = createRegistrationXml(req.body);
 
-    const xdpBuffer =
-      fs.readFileSync(XDP_PATH);
+    console.log("Generated XML:");
+    console.log(xml);
 
-    /*
-     * Node 18+ provides Blob/FormData.
-     */
     const formData = new FormData();
 
     formData.append(
       "template",
-      new Blob(
-        [xdpBuffer],
-        {
-          type:
-            "application/vnd.adobe.xdp+xml"
-        }
-      ),
-      "RegistrationForm.xdp"
+      fs.createReadStream(XDP_PATH),
+      {
+        filename: "RegistrationForm.xdp",
+        contentType: "application/vnd.adobe.xdp+xml"
+      }
     );
 
     formData.append(
       "data",
-      new Blob(
-        [xml],
-        {
-          type: "application/xml"
-        }
-      ),
-      "registrationData.xml"
+      Buffer.from(xml, "utf8"),
+      {
+        filename: "registrationData.xml",
+        contentType: "application/xml"
+      }
     );
-
-
-    const aemUrl =
-      `${AEM_BASE_URL}/adobe/document/generate/pdfform`;
 
     const authorizationHeader =
       process.env.Authorization_Header;
@@ -113,22 +100,21 @@ router.post("/", async (req, res) => {
       });
     }
 
+    const aemUrl =
+      `${AEM_BASE_URL}/adobe/document/generate/pdfform`;
 
     const response = await fetch(aemUrl, {
       method: "POST",
-
       headers: {
         Authorization: authorizationHeader,
-        "X-Adobe-Accept-Experimental": "1"
+        "X-Adobe-Accept-Experimental": "1",
+        ...formData.getHeaders()
       },
-
       body: formData
     });
 
-
     if (!response.ok) {
-      const errorText =
-        await response.text();
+      const errorText = await response.text();
 
       console.error(
         "AEM PDF generation failed:",
@@ -137,21 +123,19 @@ router.post("/", async (req, res) => {
       );
 
       return res.status(response.status).json({
-        error:
-          "AEM PDF generation failed",
-        status:
-          response.status,
-        details:
-          errorText
+        error: "AEM PDF generation failed",
+        status: response.status,
+        details: errorText
       });
     }
 
+    const pdfBuffer = Buffer.from(
+      await response.arrayBuffer()
+    );
 
-    const pdfBuffer =
-      Buffer.from(
-        await response.arrayBuffer()
-      );
-
+    console.log(
+      `Generated PDF: ${pdfBuffer.length} bytes`
+    );
 
     res.setHeader(
       "Content-Type",
@@ -171,20 +155,16 @@ router.post("/", async (req, res) => {
     res.send(pdfBuffer);
 
   } catch (error) {
-
     console.error(
       "Registration PDF error:",
       error
     );
 
     res.status(500).json({
-      error:
-        "Unable to generate registration PDF",
-      message:
-        error.message
+      error: "Unable to generate registration PDF",
+      message: error.message
     });
   }
 });
-
 
 module.exports = router;
