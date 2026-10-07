@@ -13,14 +13,15 @@ const adaptiveFormRouter =
   require("./routes/adaptive-form");
   const registrationDocumentRouter =
   require("./routes/registration-document");
-  app.use(
-  "/api/registration-document",
-  registrationDocumentRouter
-);
+  
 
 const app = express();
 const router = jsonServer.router("db.json");
 const middlewares = jsonServer.defaults();
+app.use(
+  "/api/registration-document",
+  registrationDocumentRouter
+);
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
