@@ -72,24 +72,15 @@ router.post("/", async (req, res) => {
 
     const formData = new FormData();
 
-    formData.append(
-      "template",
-      fs.createReadStream(XDP_PATH),
-      {
-        filename: "RegistrationForm.pdf",
-        contentType: "application/pdf"
-      }
-    );
+formData.append(
+  "template",
+  fs.createReadStream(XDP_PATH)
+);
 
-    formData.append(
-      "data",
-      Buffer.from(xml, "utf8"),
-      {
-        filename: "registrationData.xml",
-        contentType: "application/xml"
-      }
-    );
-
+formData.append(
+  "data",
+  Buffer.from(xml, "utf8")
+);
     const authorizationHeader =
       process.env.Authorization_Header;
 
