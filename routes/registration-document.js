@@ -30,7 +30,12 @@ function escapeXml(value) {
 }
 
 
-function createRegistrationXml(data) {
+function createRegistrationXml(requestBody) {
+  const data =
+    requestBody?.registrationapplication ||
+    requestBody ||
+    {};
+
   return `<?xml version="1.0" encoding="UTF-8"?>
 <form1>
     <registrationform>
@@ -44,7 +49,6 @@ function createRegistrationXml(data) {
 </form1>`;
 }
 
-
 // --------------------------------------------------
 // Generate PDF
 // --------------------------------------------------
@@ -57,11 +61,12 @@ router.post("/", async (req, res) => {
       });
     }
 
-    const data = req.body;
+    //const data = req.body;
 
     console.log("Generating registration PDF");
 
-    const xml = createRegistrationXml(data);
+    //const xml = createRegistrationXml(data);
+    const xml = createRegistrationXml(req.body);
 
     const xdpBuffer =
       fs.readFileSync(XDP_PATH);
