@@ -55,7 +55,10 @@ router.post("/", async (req, res) => {
       req.body?.registrationapplication ||
       req.body ||
       {};
-
+console.log(
+  "RAW REQUEST BODY:",
+  JSON.stringify(req.body, null, 2)
+);
     console.log("PDF request fields:", {
       fname: data.fname,
       lname: data.lname,
