@@ -18,12 +18,13 @@ const adaptiveFormRouter =
 const app = express();
 const router = jsonServer.router("db.json");
 const middlewares = jsonServer.defaults();
+
+app.use(express.json());
 app.use(
   "/api/registration-document",
   registrationDocumentRouter
 );
 
-app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
 app.use(draftsRouter);
 app.use("/api/adaptive-form", adaptiveFormRouter);
