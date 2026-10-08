@@ -48,6 +48,7 @@ async function loadAdaptiveForm() {
     });
 
     createReviewPanel(formElement);
+    createSignPanel(formElement);
 
     showStep(0);
 
@@ -313,28 +314,71 @@ function createReviewPanel(formElement) {
   const navigation = document.createElement("div");
   navigation.className = "wizard-navigation";
 
+  // Back button
   const back = createButton("Back", "secondary");
 
   back.addEventListener("click", () => {
     showStep(reviewIndex - 1);
   });
 
-  const submit = createButton("Submit", "primary");
+  // Sign Document button
+  const signButton = createButton(
+    "Sign Document",
+    "primary"
+  );
 
-  submit.id = "final-submit";
+  signButton.id = "sign-document";
 
-  submit.addEventListener("click", async () => {
-    await submitAdaptiveForm();
+  signButton.addEventListener("click", async () => {
+    await startSigning();
   });
 
   navigation.appendChild(back);
-  navigation.appendChild(submit);
+  navigation.appendChild(signButton);
 
   section.appendChild(navigation);
 
   formElement.appendChild(section);
 }
 
+/*
+ * --------------------------------------------------
+ * Signature PANEL
+ * --------------------------------------------------
+ */
+
+function createSignPanel(formElement) {
+  const signIndex = aemPanels.length + 1;
+
+  const section = document.createElement("section");
+
+  section.className = "wizard-panel";
+  section.dataset.step = signIndex;
+
+  const title = document.createElement("h2");
+  title.textContent = "Sign Your Registration";
+
+  section.appendChild(title);
+
+  const message = document.createElement("p");
+  message.id = "sign-message";
+  message.textContent =
+    "Your document is being prepared for signing...";
+
+  section.appendChild(message);
+
+  const frame = document.createElement("iframe");
+
+  frame.id = "signing-frame";
+  frame.className = "signing-frame";
+  frame.title = "Adobe Acrobat Sign";
+
+  frame.style.display = "none";
+
+  section.appendChild(frame);
+
+  formElement.appendChild(section);
+}
 
 /*
  * --------------------------------------------------
