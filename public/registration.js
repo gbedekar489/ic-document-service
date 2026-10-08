@@ -366,19 +366,20 @@ function createSignPanel(formElement) {
   const message = document.createElement("p");
   message.id = "sign-message";
   message.textContent =
-    "Your document is being prepared for signing...";
+    "Preparing your document for signing...";
 
   section.appendChild(message);
 
-  const frame = document.createElement("iframe");
+  const signingContainer =
+    document.createElement("div");
 
-  frame.id = "signing-frame";
-  frame.className = "signing-frame";
-  frame.title = "Adobe Acrobat Sign";
+  signingContainer.id =
+    "signing-container";
 
-  frame.style.display = "none";
+  signingContainer.className =
+    "signing-container";
 
-  section.appendChild(frame);
+  section.appendChild(signingContainer);
 
   formElement.appendChild(section);
 }
@@ -755,31 +756,10 @@ async function startSigning() {
       aemPanels.length + 1;
 
     showStep(signStep);
-
-    // Display the Acrobat Sign widget
-    const message =
-      document.getElementById(
-        "sign-message"
-      );
-
-    const frame =
-      document.getElementById(
-        "signing-frame"
-      );
-
-    if (message) {
-      message.textContent =
-        "Please review and sign your document.";
-    }
-
-    if (frame) {
-      frame.src =
-        result.widgetUrl;
-
-      frame.style.display =
-        "block";
-    }
-
+displaySigningWidget(
+  result.widgetJavaScript
+);
+  
   } catch (err) {
     console.error(
       "SIGNING ERROR:",
@@ -796,7 +776,69 @@ async function startSigning() {
     }
   }
 }
+function displaySigningWidget(widgetJavaScript) {
+  const message =
+    document.getElementById("sign-message");
 
+  const container =
+    document.getElementById("signing-container");
+
+  if (!container) {
+    throw new Error(
+      "Signing container was not found"
+    );
+  }
+
+  if (!widgetJavaScript) {
+    throw new Error(
+      "Adobe Sign widget JavaScript was not returned"
+    );
+  }
+
+  container.innerHTML = "";
+
+  const parser = new DOMParser();
+
+  const doc = parser.parseFromString(
+    widgetJavaScript,
+    "text/html"
+  );
+
+  const sourceScript =
+    doc.querySelector("script");
+
+  if (!sourceScript) {
+    throw new Error(
+      "Could not parse Adobe Sign widget script"
+    );
+  }
+
+  const scriptSrc =
+    sourceScript.getAttribute("src");
+
+  if (!scriptSrc) {
+    throw new Error(
+      "Adobe Sign widget script does not contain a src"
+    );
+  }
+
+  console.log(
+    "Loading Acrobat Sign embedded widget"
+  );
+
+  const script =
+    document.createElement("script");
+
+  script.type = "text/javascript";
+  script.src = scriptSrc;
+
+  container.appendChild(script);
+
+  if (message) {
+    message.textContent =
+      "Please review and sign your document.";
+  }
+}
 
 document.addEventListener(
   "DOMContentLoaded",
