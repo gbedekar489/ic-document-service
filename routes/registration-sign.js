@@ -7,10 +7,18 @@ const router = express.Router();
 const SIGN_API =
   "https://api.na1.echosign.com/api/rest/v6";
 
-// Generate PDF and upload to Acrobat Sign
+
+// --------------------------------------------------
+// Generate PDF -> Upload -> Create Widget -> Get URL
+// --------------------------------------------------
+
 router.post("/transient", async (req, res) => {
   try {
-    // 1. Generate PDF using our existing Node endpoint
+
+    // --------------------------------------------------
+    // 1. Generate the PDF using our existing endpoint
+    // --------------------------------------------------
+
     const pdfResponse = await axios.post(
       "http://localhost:" +
         (process.env.PORT || 3000) +
@@ -18,30 +26,46 @@ router.post("/transient", async (req, res) => {
       req.body,
       {
         responseType: "arraybuffer",
+
         headers: {
           "Content-Type": "application/json"
         }
       }
     );
 
-    const pdfBuffer = Buffer.from(pdfResponse.data);
+    const pdfBuffer =
+      Buffer.from(pdfResponse.data);
 
-    // Verify PDF
-    if (pdfBuffer.subarray(0, 5).toString() !== "%PDF-") {
-      throw new Error("AEM did not return a valid PDF");
+    if (
+      pdfBuffer.subarray(0, 5).toString() !==
+      "%PDF-"
+    ) {
+      throw new Error(
+        "AEM did not return a valid PDF"
+      );
     }
 
-    console.log("Generated PDF bytes:", pdfBuffer.length);
+    console.log(
+      "Generated PDF bytes:",
+      pdfBuffer.length
+    );
 
+
+    // --------------------------------------------------
     // 2. Upload PDF to Acrobat Sign
+    // --------------------------------------------------
+
     const formData = new FormData();
 
     formData.append(
       "File",
       pdfBuffer,
       {
-        filename: "RegistrationApplication.pdf",
-        contentType: "application/pdf"
+        filename:
+          "RegistrationApplication.pdf",
+
+        contentType:
+          "application/pdf"
       }
     );
 
@@ -55,37 +79,221 @@ router.post("/transient", async (req, res) => {
       "application/pdf"
     );
 
-    const signResponse = await axios.post(
-      `${SIGN_API}/transientDocuments`,
-      formData,
-      {
-        headers: {
-          ...formData.getHeaders(),
-          Authorization:
-            `Bearer ${process.env.ADOBE_SIGN_INTEGRATION_KEY}`
-        },
-        maxBodyLength: Infinity
-      }
+
+    const signResponse =
+      await axios.post(
+        `${SIGN_API}/transientDocuments`,
+        formData,
+        {
+          headers: {
+            ...formData.getHeaders(),
+
+            Authorization:
+              `Bearer ${process.env.ADOBE_SIGN_INTEGRATION_KEY}`
+          },
+
+          maxBodyLength: Infinity
+        }
+      );
+
+
+    const transientDocumentId =
+      signResponse.data.transientDocumentId ||
+      signResponse.data.id;
+
+
+    if (!transientDocumentId) {
+      throw new Error(
+        "Acrobat Sign did not return a transient document ID"
+      );
+    }
+
+
+    console.log(
+      "Transient Document ID:",
+      transientDocumentId
     );
 
-    // 3. Return transient document ID
+
+    // --------------------------------------------------
+    // 3. Create Acrobat Sign Widget
+    // --------------------------------------------------
+
+    const widgetPayload = {
+
+      fileInfos: [
+        {
+          transientDocumentId
+        }
+      ],
+
+      name:
+        "Registration Application",
+
+      state:
+        "ACTIVE",
+
+      widgetParticipantSetInfo: {
+
+        memberInfos: [
+          {
+            email: ""
+          }
+        ],
+
+        role:
+          "SIGNER"
+      }
+    };
+
+
+    const widgetResponse =
+      await axios.post(
+        `${SIGN_API}/widgets`,
+        widgetPayload,
+        {
+          headers: {
+            Authorization:
+              `Bearer ${process.env.ADOBE_SIGN_INTEGRATION_KEY}`,
+
+            "Content-Type":
+              "application/json"
+          }
+        }
+      );
+
+
+    const widgetId =
+      widgetResponse.data.id;
+
+
+    if (!widgetId) {
+      throw new Error(
+        "Acrobat Sign did not return a widget ID"
+      );
+    }
+
+
+    console.log(
+      "Widget ID:",
+      widgetId
+    );
+
+
+    // --------------------------------------------------
+    // 4. Get Widget Document View URL
+    // --------------------------------------------------
+
+    const viewResponse =
+      await axios.post(
+        `${SIGN_API}/widgets/${widgetId}/views`,
+
+        {
+          name: "DOCUMENT"
+        },
+
+        {
+          headers: {
+            Authorization:
+              `Bearer ${process.env.ADOBE_SIGN_INTEGRATION_KEY}`,
+
+            "Content-Type":
+              "application/json"
+          }
+        }
+      );
+
+
+    console.log(
+      "Widget view response:",
+      JSON.stringify(
+        viewResponse.data,
+        null,
+        2
+      )
+    );
+
+
+    // --------------------------------------------------
+    // 5. Extract URL
+    // --------------------------------------------------
+
+    const viewInfo =
+      Array.isArray(viewResponse.data)
+        ? viewResponse.data
+        : viewResponse.data.widgetViewInfo;
+
+
+    const documentView =
+      viewInfo?.find(
+        item => item.name === "DOCUMENT"
+      ) ||
+      viewInfo?.[0];
+
+
+    const widgetUrl =
+      documentView?.url;
+
+
+    if (!widgetUrl) {
+      throw new Error(
+        "Acrobat Sign did not return a widget URL"
+      );
+    }
+
+
+    console.log(
+      "Widget URL created successfully"
+    );
+
+
+    // --------------------------------------------------
+    // 6. Return everything to caller
+    // --------------------------------------------------
+
     return res.json({
       success: true,
-      transientDocumentId:
-        signResponse.data.transientDocumentId
+
+      transientDocumentId,
+
+      widgetId,
+
+      widgetUrl
     });
 
+
   } catch (error) {
+
     console.error(
-      "Acrobat Sign transient upload failed:",
-      error.response?.status || error.message
+      "Acrobat Sign flow failed:"
     );
+
+    console.error(
+      error.response?.status ||
+        error.message
+    );
+
+    console.error(
+      error.response?.data ||
+        ""
+    );
+
 
     return res.status(502).json({
       success: false,
-      error: "Unable to prepare document for signing"
+
+      error:
+        "Unable to create Acrobat Sign signing experience",
+
+      status:
+        error.response?.status,
+
+      details:
+        error.response?.data ||
+        error.message
     });
   }
 });
+
 
 module.exports = router;
