@@ -16,7 +16,7 @@ router.post("/transient", async (req, res) => {
   try {
 
     // --------------------------------------------------
-    // 1. Generate the PDF using our existing endpoint
+    // 1. Generate PDF using our existing endpoint
     // --------------------------------------------------
 
     const pdfResponse = await axios.post(
@@ -26,7 +26,6 @@ router.post("/transient", async (req, res) => {
       req.body,
       {
         responseType: "arraybuffer",
-
         headers: {
           "Content-Type": "application/json"
         }
@@ -79,7 +78,10 @@ router.post("/transient", async (req, res) => {
       "application/pdf"
     );
 
-console.log("=== ABOUT TO UPLOAD PDF TO ACROBAT SIGN ===");
+    console.log(
+      "=== ABOUT TO UPLOAD PDF TO ACROBAT SIGN ==="
+    );
+
     const signResponse =
       await axios.post(
         `${SIGN_API}/transientDocuments`,
@@ -101,26 +103,27 @@ console.log("=== ABOUT TO UPLOAD PDF TO ACROBAT SIGN ===");
       signResponse.data.transientDocumentId ||
       signResponse.data.id;
 
-
     if (!transientDocumentId) {
       throw new Error(
         "Acrobat Sign did not return a transient document ID"
       );
     }
 
-
     console.log(
       "Transient Document ID:",
       transientDocumentId
     );
 
-console.log("=== ABOUT TO CREATE WIDGET ===");
+
     // --------------------------------------------------
     // 3. Create Acrobat Sign Widget
     // --------------------------------------------------
 
-    const widgetPayload = {
+    console.log(
+      "=== ABOUT TO CREATE WIDGET ==="
+    );
 
+    const widgetPayload = {
       fileInfos: [
         {
           transientDocumentId
@@ -134,7 +137,6 @@ console.log("=== ABOUT TO CREATE WIDGET ===");
         "ACTIVE",
 
       widgetParticipantSetInfo: {
-
         memberInfos: [
           {
             email: ""
@@ -181,73 +183,88 @@ console.log("=== ABOUT TO CREATE WIDGET ===");
 
 
     // --------------------------------------------------
-    // 4. Get Widget Document View URL
+    // 4. Get all Web Forms
     // --------------------------------------------------
-const widgetDetailsResponse = await axios.get(
-  `${SIGN_API}/widgets/${widgetId}`,
-  {
-    headers: {
-      Authorization:
-        `Bearer ${process.env.ADOBE_SIGN_INTEGRATION_KEY}`,
-      Accept: "application/json"
+
+    console.log(
+      "=== LOOKING UP WIDGET URL ==="
+    );
+
+    const widgetsResponse =
+      await axios.get(
+        "https://secure.na1.echosign.com/api/rest/v6/widgets",
+        {
+          headers: {
+            Accept:
+              "application/json",
+
+            "x-api-user":
+              "email:girishbedekar@gmail.com",
+
+            Authorization:
+              `Bearer ${process.env.ADOBE_SIGN_INTEGRATION_KEY}`
+          }
+        }
+      );
+
+
+    const widgets =
+      widgetsResponse.data.userWidgetList || [];
+
+
+    console.log(
+      "Number of widgets returned:",
+      widgets.length
+    );
+
+
+    // --------------------------------------------------
+    // 5. Find the widget we just created
+    // --------------------------------------------------
+
+    const matchingWidget =
+      widgets.find(
+        widget =>
+          widget.id === widgetId
+      );
+
+
+    if (!matchingWidget) {
+      throw new Error(
+        `Could not find widget ${widgetId}`
+      );
     }
-  }
-);
-
-console.log(
-  "Widget details:",
-  JSON.stringify(
-    widgetDetailsResponse.data,
-    null,
-    2
-  )
-);
-
-
-    // --------------------------------------------------
-    // 5. Extract URL
-    // --------------------------------------------------
-
-  /*   const viewInfo =
-      Array.isArray(viewResponse.data)
-        ? viewResponse.data
-        : viewResponse.data.widgetViewInfo;
-
-
-    const documentView =
-      viewInfo?.find(
-        item => item.name === "DOCUMENT"
-      ) ||
-      viewInfo?.[0];
 
 
     const widgetUrl =
-      documentView?.url;
+      matchingWidget.url;
 
 
     if (!widgetUrl) {
       throw new Error(
-        "Acrobat Sign did not return a widget URL"
+        `Widget ${widgetId} does not have a URL`
       );
     }
 
 
     console.log(
-      "Widget URL created successfully"
+      "Matching widget found:",
+      widgetId
     );
-  */
+
+    console.log(
+      "Widget URL retrieved successfully"
+    );
+
 
     // --------------------------------------------------
-    // 6. Return everything to caller
+    // 6. Return result to browser
     // --------------------------------------------------
 
     return res.json({
       success: true,
-
       transientDocumentId,
-
       widgetId,
-
       widgetUrl
     });
 
