@@ -1,6 +1,6 @@
 const express = require("express");
-const fs = require("fs");
-const path = require("path");
+//const fs = require("fs");
+//const path = require("path");
 const FormData = require("form-data");
 
 const router = express.Router();
@@ -83,8 +83,13 @@ console.log(
 );
 
     const formData = new FormData();
+    // Template is the AEM template name
+formData.append(
+  "template",
+  "RegistrationForm.pdf"
+);
 
-const templateBuffer = fs.readFileSync(TEMPLATE_PATH);
+/* const templateBuffer = fs.readFileSync(TEMPLATE_PATH);
 
 formData.append(
   "template",
@@ -93,7 +98,24 @@ formData.append(
     filename: "RegistrationForm.pdf",
     contentType: "application/pdf"
   }
+) */;
+ const options = {
+  locale: "en",
+  isTagged: true,
+  embedFonts: true,
+  linearizedPDF: true,
+  retainFormState: false,
+  retainUnsignedSignatureFields: false,
+  acrobatVersion: "Acrobat_11",
+  contentRoot:
+    "crx:///content/dam/formsanddocuments"
+};
+
+formData.append(
+  "options",
+  JSON.stringify(options)
 );
+
 formData.append(
   "data",
   Buffer.from(xml, "utf8")
