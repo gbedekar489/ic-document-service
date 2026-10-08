@@ -24,14 +24,8 @@ function escapeXml(value) {
     .replace(/'/g, "&apos;");
 }
 
-function createRegistrationXml(requestBody) {
-  const data =
-    requestBody?.registrationapplication ||
-    requestBody ||
-    {};
-
-  return `<?xml version="1.0" encoding="UTF-8"?>
-<form1>
+function createRegistrationXml(data) {
+  return `<form1>
   <registrationform>
     <fname>${escapeXml(data.fname)}</fname>
     <lname>${escapeXml(data.lname)}</lname>
@@ -42,7 +36,6 @@ function createRegistrationXml(requestBody) {
   </registrationform>
 </form1>`;
 }
-
 router.post("/", async (req, res) => {
   try {
     
@@ -103,10 +96,7 @@ formData.append(
   JSON.stringify(options)
 );
 
-formData.append(
-  "data",
-  Buffer.from(xml, "utf8")
-);
+formData.append("data", xml);
     const authorizationHeader =
       process.env.Authorization_Header;
 
