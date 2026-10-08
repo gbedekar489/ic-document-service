@@ -13,6 +13,8 @@ const adaptiveFormRouter =
   require("./routes/adaptive-form");
   const registrationDocumentRouter =
   require("./routes/registration-document");
+  const registrationSignRouter =
+  require("./routes/registration-sign");
   
 
 const app = express();
@@ -23,6 +25,10 @@ app.use(express.json());
 app.use(
   "/api/registration-document",
   registrationDocumentRouter
+);
+app.use(
+  "/api/registration/sign",
+  registrationSignRouter
 );
 
 app.use(express.static(path.join(__dirname, "public")));
