@@ -330,6 +330,9 @@ function createReviewPanel(formElement) {
   signButton.id = "sign-document";
 
   signButton.addEventListener("click", async () => {
+     console.log(
+      "SIGN DOCUMENT BUTTON CLICKED"
+    );
     await startSigning();
   });
 
@@ -671,6 +674,127 @@ function escapeHtml(value) {
   const div = document.createElement("div");
   div.textContent = value || "";
   return div.innerHTML;
+}
+async function startSigning() {
+  console.log("=== START SIGNING ===");
+
+  const formElement =
+    document.getElementById("adaptive-form");
+
+  const error =
+    document.getElementById("error");
+
+  const signButton =
+    document.getElementById("sign-document");
+
+  try {
+    error.textContent = "";
+
+    if (signButton) {
+      signButton.disabled = true;
+      signButton.textContent =
+        "Preparing document...";
+    }
+
+    // Collect all current form values
+    const formData =
+      new FormData(formElement);
+
+    const data =
+      Object.fromEntries(
+        formData.entries()
+      );
+
+    console.log(
+      "Sending registration data for signing"
+    );
+
+    // Call our existing backend
+    const response =
+      await fetch(
+        "/api/registration/sign/transient",
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type":
+              "application/json"
+          },
+
+          body:
+            JSON.stringify(data)
+        }
+      );
+
+    const result =
+      await response.json();
+
+    console.log(
+      "Signing API response:",
+      result
+    );
+
+    if (
+      !response.ok ||
+      !result.success
+    ) {
+      throw new Error(
+        result.error ||
+        "Unable to start signing"
+      );
+    }
+
+    if (!result.widgetUrl) {
+      throw new Error(
+        "Widget URL was not returned"
+      );
+    }
+
+    // Step 4
+    const signStep =
+      aemPanels.length + 1;
+
+    showStep(signStep);
+
+    // Display the Acrobat Sign widget
+    const message =
+      document.getElementById(
+        "sign-message"
+      );
+
+    const frame =
+      document.getElementById(
+        "signing-frame"
+      );
+
+    if (message) {
+      message.textContent =
+        "Please review and sign your document.";
+    }
+
+    if (frame) {
+      frame.src =
+        result.widgetUrl;
+
+      frame.style.display =
+        "block";
+    }
+
+  } catch (err) {
+    console.error(
+      "SIGNING ERROR:",
+      err
+    );
+
+    error.textContent =
+      `Unable to start signing: ${err.message}`;
+
+    if (signButton) {
+      signButton.disabled = false;
+      signButton.textContent =
+        "Sign Document";
+    }
+  }
 }
 
 
