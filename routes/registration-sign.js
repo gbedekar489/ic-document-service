@@ -79,7 +79,7 @@ router.post("/transient", async (req, res) => {
       "application/pdf"
     );
 
-
+console.log("=== ABOUT TO UPLOAD PDF TO ACROBAT SIGN ===");
     const signResponse =
       await axios.post(
         `${SIGN_API}/transientDocuments`,
@@ -114,7 +114,7 @@ router.post("/transient", async (req, res) => {
       transientDocumentId
     );
 
-
+console.log("=== ABOUT TO CREATE WIDGET ===");
     // --------------------------------------------------
     // 3. Create Acrobat Sign Widget
     // --------------------------------------------------
