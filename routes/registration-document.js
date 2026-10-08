@@ -60,6 +60,16 @@ console.log(
 
     console.log("Generated XML:");
     console.log(xml);
+    console.log("PDF template exists only in AEM");
+console.log("Template:", "RegistrationForm.pdf");
+console.log(
+  "ContentRoot:",
+  "crx:///content/dam/formsanddocuments"
+);
+console.log(
+  "XML bytes:",
+  Buffer.byteLength(xml, "utf8")
+);
  
 
     const formData = new FormData();
