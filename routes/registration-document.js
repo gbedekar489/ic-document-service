@@ -1,8 +1,5 @@
 const express = require("express");
-const fs = require("fs");
-const path = require("path");
-const os = require("os");
-const { execFile } = require("child_process");
+const axios = require("axios");
 const FormData = require("form-data");
 
 const router = express.Router();
@@ -10,13 +7,6 @@ const router = express.Router();
 const AEM_BASE_URL =
   "https://author-p133654-e1305513.adobeaemcloud.com";
 
-/* const TEMPLATE_PATH = path.join(
-  __dirname,
-  "..",
-  "templates",
-  "RegistrationForm.pdf"
-);
- */
 function escapeXml(value) {
   return String(value ?? "")
     .replace(/&/g, "&amp;")
@@ -38,17 +28,19 @@ function createRegistrationXml(data) {
   </registrationform>
 </form1>`;
 }
+
 router.post("/", async (req, res) => {
   try {
-    
+    console.log(
+      "RAW REQUEST BODY:",
+      JSON.stringify(req.body, null, 2)
+    );
+
     const data =
       req.body?.registrationapplication ||
       req.body ||
       {};
-console.log(
-  "RAW REQUEST BODY:",
-  JSON.stringify(req.body, null, 2)
-);
+
     console.log("PDF request fields:", {
       fname: data.fname,
       lname: data.lname,
@@ -58,162 +50,11 @@ console.log(
       employment: data.employment
     });
 
-    const xml = createRegistrationXml(req.body);
-    const dataXmlPath = path.join(
-  os.tmpdir(),
-  `registration-${Date.now()}.xml`
-);
-
-const outputPdfPath = path.join(
-  os.tmpdir(),
-  `registration-${Date.now()}.pdf`
-);
-
-fs.writeFileSync(
-  dataXmlPath,
-  xml,
-  "utf8"
-);
-
-const options = JSON.stringify({
-  locale: "en",
-  isTagged: true,
-  embedFonts: true,
-  linearizedPDF: true,
-  retainFormState: false,
-  retainUnsignedSignatureFields: false,
-  acrobatVersion: "Acrobat_11",
-  contentRoot: "crx:///content/dam/formsanddocuments"
-});
-const optionsJson = JSON.stringify(options);
-
-const curlArgs = [
-  "--location",
-  "https://author-p133654-e1305513.adobeaemcloud.com/adobe/document/generate/pdfform",
-
-  "--header",
-  `Authorization: ${process.env.Authorization_Header}`,
-
-  "--header",
-  "X-Adobe-Accept-Experimental: 1",
-
-  "--form",
-  "template=RegistrationForm.pdf",
-
-  "--form",
-  `data=@${dataXmlPath}`,
-
-  "--form",
-  `options=${optionsJson}`,
-
-  "--output",
-  outputPdfPath
-];
-
-execFile("curl", curlArgs, (error, stdout, stderr) => {
-  if (error) {
-    console.error("Curl error:", error);
-    console.error("Curl stderr:", stderr);
-
-    return res.status(500).json({
-      error: "AEM PDF generation failed",
-      details: stderr || error.message
-    });
-  }
-
-  try {
-    const pdfBuffer =
-      fs.readFileSync(outputPdfPath);
-
-    res.setHeader(
-      "Content-Type",
-      "application/pdf"
-    );
-
-    res.setHeader(
-      "Content-Disposition",
-      'inline; filename="RegistrationApplication.pdf"'
-    );
-
-    res.send(pdfBuffer);
-
-  } catch (readError) {
-    console.error(
-      "Unable to read generated PDF:",
-      readError
-    );
-
-    res.status(500).json({
-      error: "Unable to read generated PDF"
-    });
-  } finally {
-    try {
-      fs.unlinkSync(dataXmlPath);
-    } catch {}
-
-    try {
-      fs.unlinkSync(outputPdfPath);
-    } catch {}
-  }
-});
+    const xml = createRegistrationXml(data);
 
     console.log("Generated XML:");
     console.log(xml);
-    console.log("PDF template exists only in AEM");
-console.log("Template:", "RegistrationForm.pdf");
-console.log(
-  "ContentRoot:",
-  "crx:///content/dam/formsanddocuments"
-);
-console.log(
-  "XML bytes:",
-  Buffer.byteLength(xml, "utf8")
-);
- 
 
-    const formData = new FormData();
-    // Template is the AEM template name
-formData.append(
-  "template",
-  "RegistrationForm.pdf"
-);
-
-/* const templateBuffer = fs.readFileSync(TEMPLATE_PATH);
-
-formData.append(
-  "template",
-  templateBuffer,
-  {
-    filename: "RegistrationForm.pdf",
-    contentType: "application/pdf"
-  }
-) */;
- /* const options = {
-  locale: "en",
-  isTagged: true,
-  embedFonts: true,
-  linearizedPDF: true,
-  retainFormState: false,
-  retainUnsignedSignatureFields: false,
-  acrobatVersion: "Acrobat_11",
-  contentRoot:
-    "crx:///content/dam/formsanddocuments"
-};
-const optionsJson = JSON.stringify(options);
- */
-formData.append(
-  "options",
-  JSON.stringify(options)
-);
-
-formData.append(
-  "data",
-  Buffer.from(xml, "utf8"),
-  {
-    filename: "registrationData.xml",
-    contentType: "application/xml"
-  }
-);
     const authorizationHeader =
       process.env.Authorization_Header;
 
@@ -227,18 +68,84 @@ formData.append(
     const aemUrl =
       `${AEM_BASE_URL}/adobe/document/generate/pdfform`;
 
-    const response = await fetch(aemUrl, {
-      method: "POST",
-      headers: {
-        Authorization: authorizationHeader,
-        "X-Adobe-Accept-Experimental": "1",
-        ...formData.getHeaders()
-      },
-      body: formData
-    });
+    console.log("Template:", "RegistrationForm.pdf");
 
-    if (!response.ok) {
-      const errorText = await response.text();
+    console.log(
+      "ContentRoot:",
+      "crx:///content/dam/formsanddocuments"
+    );
+
+    console.log(
+      "XML bytes:",
+      Buffer.byteLength(xml, "utf8")
+    );
+
+    // Build multipart request
+    const formData = new FormData();
+
+    formData.append(
+      "template",
+      "RegistrationForm.pdf"
+    );
+
+    formData.append(
+      "data",
+      Buffer.from(xml, "utf8"),
+      {
+        filename: "registrationData.xml",
+        contentType: "application/xml"
+      }
+    );
+
+    const options = {
+      locale: "en",
+      isTagged: true,
+      embedFonts: true,
+      linearizedPDF: true,
+      retainFormState: false,
+      retainUnsignedSignatureFields: false,
+      acrobatVersion: "Acrobat_11",
+      contentRoot:
+        "crx:///content/dam/formsanddocuments"
+    };
+
+    formData.append(
+      "options",
+      JSON.stringify(options)
+    );
+
+    console.log("Calling AEM PDF generation API...");
+
+    const response = await axios.post(
+      aemUrl,
+      formData,
+      {
+        headers: {
+          ...formData.getHeaders(),
+          Authorization: authorizationHeader,
+          "X-Adobe-Accept-Experimental": "1"
+        },
+
+        responseType: "arraybuffer",
+
+        maxBodyLength: Infinity,
+        maxContentLength: Infinity,
+
+        validateStatus: () => true
+      }
+    );
+
+    console.log(
+      "AEM PDF generation status:",
+      response.status
+    );
+
+    if (
+      response.status < 200 ||
+      response.status >= 300
+    ) {
+      const errorText =
+        Buffer.from(response.data).toString("utf8");
 
       console.error(
         "AEM PDF generation failed:",
@@ -253,12 +160,13 @@ formData.append(
       });
     }
 
-    const pdfBuffer = Buffer.from(
-      await response.arrayBuffer()
-    );
+    const pdfBuffer =
+      Buffer.from(response.data);
 
     console.log(
-      `Generated PDF: ${pdfBuffer.length} bytes`
+      "Generated PDF size:",
+      pdfBuffer.length,
+      "bytes"
     );
 
     res.setHeader(
@@ -276,7 +184,7 @@ formData.append(
       pdfBuffer.length
     );
 
-    res.send(pdfBuffer);
+    return res.send(pdfBuffer);
 
   } catch (error) {
     console.error(
@@ -284,9 +192,11 @@ formData.append(
       error
     );
 
-    res.status(500).json({
-      error: "Unable to generate registration PDF",
-      message: error.message
+    return res.status(500).json({
+      error:
+        "Unable to generate registration PDF",
+      message:
+        error.message
     });
   }
 });
