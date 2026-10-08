@@ -183,42 +183,32 @@ console.log("=== ABOUT TO CREATE WIDGET ===");
     // --------------------------------------------------
     // 4. Get Widget Document View URL
     // --------------------------------------------------
+const widgetDetailsResponse = await axios.get(
+  `${SIGN_API}/widgets/${widgetId}`,
+  {
+    headers: {
+      Authorization:
+        `Bearer ${process.env.ADOBE_SIGN_INTEGRATION_KEY}`,
+      Accept: "application/json"
+    }
+  }
+);
 
-    const viewResponse =
-      await axios.post(
-        `${SIGN_API}/widgets/${widgetId}/views`,
-
-        {
-          name: "DOCUMENT"
-        },
-
-        {
-          headers: {
-            Authorization:
-              `Bearer ${process.env.ADOBE_SIGN_INTEGRATION_KEY}`,
-
-            "Content-Type":
-              "application/json"
-          }
-        }
-      );
-
-
-    console.log(
-      "Widget view response:",
-      JSON.stringify(
-        viewResponse.data,
-        null,
-        2
-      )
-    );
+console.log(
+  "Widget details:",
+  JSON.stringify(
+    widgetDetailsResponse.data,
+    null,
+    2
+  )
+);
 
 
     // --------------------------------------------------
     // 5. Extract URL
     // --------------------------------------------------
 
-    const viewInfo =
+  /*   const viewInfo =
       Array.isArray(viewResponse.data)
         ? viewResponse.data
         : viewResponse.data.widgetViewInfo;
@@ -245,7 +235,7 @@ console.log("=== ABOUT TO CREATE WIDGET ===");
     console.log(
       "Widget URL created successfully"
     );
-
+  */
 
     // --------------------------------------------------
     // 6. Return everything to caller
