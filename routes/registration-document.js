@@ -8,13 +8,13 @@ const router = express.Router();
 const AEM_BASE_URL =
   "https://author-p133654-e1305513.adobeaemcloud.com";
 
-const TEMPLATE_PATH = path.join(
+/* const TEMPLATE_PATH = path.join(
   __dirname,
   "..",
   "templates",
   "RegistrationForm.pdf"
 );
-
+ */
 function escapeXml(value) {
   return String(value ?? "")
     .replace(/&/g, "&amp;")
@@ -45,12 +45,7 @@ function createRegistrationXml(requestBody) {
 
 router.post("/", async (req, res) => {
   try {
-    if (!fs.existsSync(TEMPLATE_PATH)) {
-      return res.status(500).json({
-        error: "RegistrationForm.pdf was not found"
-      });
-    }
-
+    
     const data =
       req.body?.registrationapplication ||
       req.body ||
@@ -72,15 +67,7 @@ console.log(
 
     console.log("Generated XML:");
     console.log(xml);
-    console.log(
-  "Template size:",
-  fs.statSync(TEMPLATE_PATH).size
-);
-
-console.log(
-  "Template path:",
-  TEMPLATE_PATH
-);
+ 
 
     const formData = new FormData();
     // Template is the AEM template name
