@@ -96,7 +96,14 @@ formData.append(
   JSON.stringify(options)
 );
 
-formData.append("data", xml);
+formData.append(
+  "data",
+  Buffer.from(xml, "utf8"),
+  {
+    filename: "registrationData.xml",
+    contentType: "application/xml"
+  }
+);
     const authorizationHeader =
       process.env.Authorization_Header;
 
