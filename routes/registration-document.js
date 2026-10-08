@@ -57,6 +57,103 @@ console.log(
     });
 
     const xml = createRegistrationXml(req.body);
+    const dataXmlPath = path.join(
+  os.tmpdir(),
+  `registration-${Date.now()}.xml`
+);
+
+const outputPdfPath = path.join(
+  os.tmpdir(),
+  `registration-${Date.now()}.pdf`
+);
+
+fs.writeFileSync(
+  dataXmlPath,
+  xml,
+  "utf8"
+);
+
+const options = JSON.stringify({
+  locale: "en",
+  isTagged: true,
+  embedFonts: true,
+  linearizedPDF: true,
+  retainFormState: false,
+  retainUnsignedSignatureFields: false,
+  acrobatVersion: "Acrobat_11",
+  contentRoot: "crx:///content/dam/formsanddocuments"
+});
+const optionsJson = JSON.stringify(options);
+
+const curlArgs = [
+  "--location",
+  "https://author-p133654-e1305513.adobeaemcloud.com/adobe/document/generate/pdfform",
+
+  "--header",
+  `Authorization: ${process.env.Authorization_Header}`,
+
+  "--header",
+  "X-Adobe-Accept-Experimental: 1",
+
+  "--form",
+  "template=RegistrationForm.pdf",
+
+  "--form",
+  `data=@${dataXmlPath}`,
+
+  "--form",
+  `options=${optionsJson}`,
+
+  "--output",
+  outputPdfPath
+];
+
+execFile("curl", curlArgs, (error, stdout, stderr) => {
+  if (error) {
+    console.error("Curl error:", error);
+    console.error("Curl stderr:", stderr);
+
+    return res.status(500).json({
+      error: "AEM PDF generation failed",
+      details: stderr || error.message
+    });
+  }
+
+  try {
+    const pdfBuffer =
+      fs.readFileSync(outputPdfPath);
+
+    res.setHeader(
+      "Content-Type",
+      "application/pdf"
+    );
+
+    res.setHeader(
+      "Content-Disposition",
+      'inline; filename="RegistrationApplication.pdf"'
+    );
+
+    res.send(pdfBuffer);
+
+  } catch (readError) {
+    console.error(
+      "Unable to read generated PDF:",
+      readError
+    );
+
+    res.status(500).json({
+      error: "Unable to read generated PDF"
+    });
+  } finally {
+    try {
+      fs.unlinkSync(dataXmlPath);
+    } catch {}
+
+    try {
+      fs.unlinkSync(outputPdfPath);
+    } catch {}
+  }
+});
 
     console.log("Generated XML:");
     console.log(xml);
@@ -89,7 +186,7 @@ formData.append(
     contentType: "application/pdf"
   }
 ) */;
- const options = {
+ /* const options = {
   locale: "en",
   isTagged: true,
   embedFonts: true,
@@ -100,7 +197,8 @@ formData.append(
   contentRoot:
     "crx:///content/dam/formsanddocuments"
 };
-
+const optionsJson = JSON.stringify(options);
+ */
 formData.append(
   "options",
   JSON.stringify(options)
