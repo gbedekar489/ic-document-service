@@ -677,6 +677,11 @@ function escapeHtml(value) {
 }
 async function startSigning() {
   console.log("=== START SIGNING ===");
+  const message =
+  document.getElementById("sign-message");
+
+const frame =
+  document.getElementById("signing-frame");
 
   const formElement =
     document.getElementById("adaptive-form");
