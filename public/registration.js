@@ -376,9 +376,7 @@ function createSignPanel(formElement) {
   frame.className = "signing-frame";
   frame.title = "Adobe Acrobat Sign";
 
-  frame.width = "1900";
-  frame.height = "1000";
-  frame.style.border = "0";
+    frame.style.border = "0";
 
   section.appendChild(frame);
 

@@ -362,7 +362,20 @@ body {
   text-align: right;
   color: #101828;
 }
+.signing-frame {
+  width: 100%;
+  height: 700px;
+  border: 0;
+  display: block;
+}
 
+#signing-container {
+  width: 100%;
+}
+
+.wizard-panel[data-step="3"] {
+  width: 100%;
+}
 
 /* ---------------------------------------
    Mobile
