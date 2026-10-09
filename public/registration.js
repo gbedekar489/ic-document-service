@@ -391,7 +391,7 @@ function createSignPanel(formElement) {
  */
 
 function showStep(step) {
-  const totalSteps = aemPanels.length + 1;
+  const totalSteps = aemPanels.length + 2;
 
   if (step < 0 || step >= totalSteps) {
     return;
