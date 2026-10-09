@@ -66,7 +66,7 @@ router.post("/", async (req, res) => {
     }
 
     const aemUrl =
-      `${AEM_BASE_URL}/adobe/document/generate/pdfform`;
+      `${AEM_BASE_URL}/adobe/forms/doc/v1/generatePDFOutput`;
 
     console.log("Template:", "RegistrationForm.pdf");
 
