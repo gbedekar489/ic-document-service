@@ -373,16 +373,17 @@ function createSignPanel(formElement) {
   const frame = document.createElement("iframe");
 
   frame.id = "signing-frame";
-  frame.title = "Adobe Acrobat Sign";
   frame.className = "signing-frame";
+  frame.title = "Adobe Acrobat Sign";
 
-  frame.style.display = "none";
+  frame.width = "1900";
+  frame.height = "1000";
+  frame.style.border = "0";
 
   section.appendChild(frame);
 
   formElement.appendChild(section);
 }
-
 /*
  * --------------------------------------------------
  * STEP NAVIGATION

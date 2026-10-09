@@ -238,9 +238,7 @@ router.post("/transient", async (req, res) => {
 
     const widgetUrl =
       matchingWidget.url;
-      const widgetJavaScript =
-  matchingWidget.javascript;
-
+      
 
     if (!widgetUrl) {
       throw new Error(
@@ -267,8 +265,8 @@ router.post("/transient", async (req, res) => {
       success: true,
       transientDocumentId,
       widgetId,
-      widgetUrl,
-      widgetJavaScript
+      widgetUrl
+      
     });
 
 
