@@ -22,7 +22,7 @@ const router = jsonServer.router("db.json");
 const middlewares = jsonServer.defaults();
 const usaMapRoutes = require('./routes/usa-map');
 
-app.use('/api', usaMapRoutes);
+
 
 app.use(express.json());
 app.use(
@@ -509,6 +509,7 @@ app.use((req, res, next) => {
 
   next();
 });
+app.use('/api', usaMapRoutes);
 
 
 // Serve static files first
