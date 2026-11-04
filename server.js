@@ -924,62 +924,68 @@ app.post('/send-pdf-email', async (req, res) => {
 });
 app.post("/generate-pdf", async (req, res) => {
   try {
-    // Support either direct fields or nested under formData
     const body = req.body || {};
-    const source = body.formData || body.payload || body;
-     console.log("[Node] PDF request received");
 
-        console.log("[Node] Request metadata:", {
-            documentId: body.documentId,
-            payloadKeys: Object.keys(body),
-            hasDataXml: typeof body.dataXml === "string",
-            dataXmlLength: body.dataXml?.length || 0
-        });
+    // Read values sent by the AEM Embed PDF component
+    const documentId = body.documentId;
+    const formData = body.formData || {};
 
-    //const documentId = source.documentId || body.documentId || req.query.documentId;
-    //const userId = source.userId || body.userId || req.query.userId;
-    //const documentId = "f35ea2d9-6164-4791-8943-c56a6085eb91";
-    const userId = "1";
+    console.log("[Node] PDF request received");
 
-    const entityNS = source.entityNS || body.entityNS;
-    const entityID = source.entityID || body.entityID;
+    console.log("[Node] Request metadata:", {
+      documentId,
+      payloadKeys: Object.keys(body),
+      formDataKeys: Object.keys(formData)
+    });
 
     if (!documentId) {
-      return res.status(400).json({ error: "missing documentId" });
-    }
-
-    let serviceParams = {};
-
-    if (entityNS && entityID) {
-      serviceParams = { entityNS, entityID };
-    } else if (userId) {
-      serviceParams = { userId };
-    } else {
       return res.status(400).json({
-        error: "missing required parameters (userId OR entityNS/entityID)"
+        error: "Missing documentId"
       });
     }
 
-    const pdfBuffer = await fetchPdfBuffer(documentId, serviceParams);
+    // TEMPORARY: Hardcoded userId for testing
+    const serviceParams = {
+      userId: "1"
+    };
 
+    // Generate PDF using AEM Interactive Communications
+    const pdfBuffer = await fetchPdfBuffer(
+      documentId,
+      serviceParams
+    );
+
+    console.log("[Node] PDF generated successfully:", {
+      pdfSize: pdfBuffer.length
+    });
+
+    // Return PDF to the AEM Embed PDF component
     res.setHeader("Content-Type", "application/pdf");
-    res.setHeader("Content-Disposition", 'inline; filename="generated.pdf"');
+    res.setHeader(
+      "Content-Disposition",
+      'inline; filename="Invoice.pdf"'
+    );
+    res.setHeader("Cache-Control", "no-store");
+
     return res.status(200).send(pdfBuffer);
+
   } catch (error) {
     if (error.status) {
-      console.error("AEM error", error.status, error.bodyPreview);
+      console.error("[Node] AEM error:", error.status, error.bodyPreview);
+
       return res.status(502).json({
-        error: "communications service error",
-        status: error.status,
-        bodyPreview: error.bodyPreview
+        error: "Communications service error",
+        status: error.status
       });
     }
 
-    console.error("wrapper error", error.message || error);
-    return res.status(500).json({ error: "Failed to generate PDF" });
+    console.error("[Node] PDF generation error:", error.message);
+
+    return res.status(500).json({
+      error: "Failed to generate PDF"
+    });
   }
 });
-
 /**
  * POST /generate-pdf-base64
  * Body: { "userId": "12345" }
