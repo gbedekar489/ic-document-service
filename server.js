@@ -929,6 +929,13 @@ app.post("/generate-pdf", async (req, res) => {
     // Read values sent by the AEM Embed PDF component
     const documentId = body.documentId;
     const formData = body.formData || {};
+    const userId = formData.userId;
+
+if (!documentId || userId == null || userId === "") {
+  return res.status(400).json({
+    error: "documentId and userId are required"
+  });
+}
 
     console.log("[Node] PDF request received");
 
@@ -944,11 +951,9 @@ app.post("/generate-pdf", async (req, res) => {
       });
     }
 
-    // TEMPORARY: Hardcoded userId for testing
-    const serviceParams = {
-      userId: "1"
-    };
-
+const serviceParams = {
+  userId: String(userId)
+};
     // Generate PDF using AEM Interactive Communications
     const pdfBuffer = await fetchPdfBuffer(
       documentId,
