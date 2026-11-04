@@ -927,10 +927,18 @@ app.post("/generate-pdf", async (req, res) => {
     // Support either direct fields or nested under formData
     const body = req.body || {};
     const source = body.formData || body.payload || body;
+     console.log("[Node] PDF request received");
+
+        console.log("[Node] Request metadata:", {
+            documentId: body.documentId,
+            payloadKeys: Object.keys(body),
+            hasDataXml: typeof body.dataXml === "string",
+            dataXmlLength: body.dataXml?.length || 0
+        });
 
     //const documentId = source.documentId || body.documentId || req.query.documentId;
     //const userId = source.userId || body.userId || req.query.userId;
-    const documentId = "f35ea2d9-6164-4791-8943-c56a6085eb91";
+    //const documentId = "f35ea2d9-6164-4791-8943-c56a6085eb91";
     const userId = "1";
 
     const entityNS = source.entityNS || body.entityNS;
