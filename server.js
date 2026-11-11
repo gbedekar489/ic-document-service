@@ -785,7 +785,7 @@ app.get('/health', (req, res) => res.json({ status: 'ok' }));
  * returns: { buffer, status } or throws
  */
  async function fetchPdfBuffer(documentId, serviceParams = {}) {
-  const url = `https://author-p133654-e1305513.adobeaemcloud.com/adobe/communications/${documentId}/pdf`;
+  const url = `https://publish-p133654-e1305513.adobeaemcloud.com/adobe/communications/${documentId}/pdf`;
   const optionsJson = JSON.stringify({
     prefill: {
       serviceName: 'IC_FDM',
