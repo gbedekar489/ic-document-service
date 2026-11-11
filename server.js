@@ -701,7 +701,8 @@ const SENDGRID_API_KEY = process.env.SEND_GRID_API_KEY;
 const AEM_COMM_BASE =
   'https://author-p133654-e1305513.adobeaemcloud.com/adobe/communications';
 const AEM_COMM_URL =  'https://author-p133654-e1305513.adobeaemcloud.com/adobe/communications/f35ea2d9-6164-4791-8943-c56a6085eb91/pdf';
-const AEM_BEARER = 'Basic Z2VlYmVlOmFkbWlu';                // e.g. "Bearer eyJ..."
+//const AEM_BEARER = 'Basic Z2VlYmVlOmFkbWlu';                // e.g. "Bearer eyJ..."
+const AEM_BEARER = process.env.AEM_BEARER;
 //const INTERNAL_API_KEY = process.env.INTERNAL_API_KEY;    // Optional: simple protection
 
 // SendGrid config (required for /generate-and-send)
